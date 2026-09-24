@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    GENERATED FILE — do not edit.
+    
+    Copied from public/assets/img/favicon.svg by bin/build-pages.php.
+    Edit the original and re-run:  php bin/build-pages.php
+-->
+<!--
+    Favicon: the mortarboard from the WEST Scholars logo.
+    Colours are the logo's own - #183C9A for the cap, #0B0D12 for the outline.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+    <rect width="32" height="32" rx="6" fill="#F3F6FB"/>
+    <path d="M16 6 3 11.5 16 17l13-5.5L16 6Z" fill="#183C9A"/>
+    <path d="M7.5 14v6c0 2.3 3.8 4.2 8.5 4.2s8.5-1.9 8.5-4.2v-6"
+          fill="none" stroke="#0B0D12" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

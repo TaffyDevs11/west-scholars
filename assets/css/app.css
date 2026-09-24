@@ -1,0 +1,1569 @@
+/*
+ * GENERATED FILE — do not edit.
+ * 
+ * Copied from public/assets/css/app.css by bin/build-pages.php.
+ * Edit the original and re-run:  php bin/build-pages.php
+ */
+/* ==========================================================================
+   WEST Scholars — design system
+   ==========================================================================
+
+   PALETTE
+   -------
+   Taken from the WEST Scholars logo:
+
+     #183C9A  the "WEST / Scholars" wordmark        -> primary brand blue
+     #2D4F7C  the navy band beneath the mark        -> secondary surface
+     #0B0D12  the cap and globe outlines            -> ink / borders
+     #F3F6FB  the logo's off-white field            -> page background
+     #ECEFF5  the grey strip inside the mark        -> recessed controls
+
+   Blue is the only filled action colour on the site. Everything else is
+   built from ink at varying opacity, which keeps the interface calm and
+   makes the one blue element on a page unmistakably the thing to click.
+
+   TYPOGRAPHY (following the supplied design reference)
+   ---------------------------------------------------
+   * An editorial serif for display type at 28px and above.
+   * A neutral grotesque for all UI text.
+   * Tight negative tracking on display sizes, loosening as size drops.
+   * Small caps-ish uppercase labels with wide tracking for section eyebrows.
+
+   Both families are system stacks. The Content-Security-Policy restricts
+   fonts to 'self', and a webfont would cost a round trip and a flash of
+   unstyled text for no real gain over what every OS already ships.
+
+   SURFACES
+   --------
+   Depth comes from background shifts and hairline borders, not shadows.
+   Radii: 4px on cards, inputs and panels; full pills on buttons and badges.
+   That contrast between square surfaces and round controls is the single
+   most recognisable trait of the reference design.
+   ========================================================================== */
+
+:root {
+    /* --- Brand, straight from the logo --- */
+    --color-scholar-blue: #183C9A;
+    --color-cap-navy: #2D4F7C;
+    --color-ink: #0B0D12;
+    --color-canvas: #F3F6FB;
+    --color-recessed: #ECEFF5;
+
+    /* --- Derived brand tints --- */
+    --color-blue-hover: #12307D;
+    --color-blue-active: #0E2764;
+    --color-blue-wash: #EDF1FB;
+    --color-blue-border: #C7D3F0;
+
+    /* --- Surfaces --- */
+    --color-surface: #FFFFFF;
+    --color-surface-sunken: var(--color-recessed);
+
+    /* --- Text, as ink at decreasing strength --- */
+    --color-text: var(--color-ink);
+    --color-text-muted: #55606F;
+    --color-text-subtle: #7A8595;
+    --color-text-inverse: #FFFFFF;
+
+    /* --- Lines --- */
+    --color-border: #DDE3ED;
+    --color-border-strong: #C3CCD9;
+    --color-border-ink: rgba(11, 13, 18, 0.9);
+
+    /* --- Status. Hues sit near the brand so they read as part of it. --- */
+    --color-success: #14663F;
+    --color-success-wash: #E6F4EC;
+    --color-success-border: #B6DCC7;
+    --color-error: #9A1B1B;
+    --color-error-wash: #FCEDED;
+    --color-error-border: #F0C6C6;
+    --color-warning: #8A5A06;
+    --color-warning-wash: #FDF4E3;
+    --color-warning-border: #EFD9AC;
+
+    /* --- Type --- */
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+                    "Times New Roman", serif;
+    --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    /* --- Rhythm --- */
+    --shell-width: 1200px;
+    --section-gap: 96px;
+
+    /* --- Radii: square surfaces, round controls --- */
+    --radius: 4px;
+    --radius-pill: 999px;
+
+    /* Used sparingly — only where an element genuinely floats. */
+    --shadow-raised: 0 1px 2px rgba(11, 13, 18, 0.06),
+                     0 8px 24px rgba(11, 13, 18, 0.06);
+}
+
+/* --------------------------------------------------------------------------
+   Reset
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-text);
+    font-family: var(--font-ui);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Column layout so the footer sits at the bottom of a short page. */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4, p, figure, blockquote {
+    margin: 0;
+}
+
+ul, ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+img, svg {
+    max-width: 100%;
+    display: block;
+}
+
+a {
+    color: var(--color-scholar-blue);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+a:hover {
+    color: var(--color-blue-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Focus
+
+   A single visible focus ring, applied with :focus-visible so it appears for
+   keyboard users without putting a ring around every clicked button.
+   -------------------------------------------------------------------------- */
+
+:focus-visible {
+    outline: 2px solid var(--color-scholar-blue);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    background: var(--color-ink);
+    color: var(--color-text-inverse);
+    padding: 12px 20px;
+    border-radius: 0 0 var(--radius) 0;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.skip-link:focus {
+    left: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Layout
+   -------------------------------------------------------------------------- */
+
+.shell {
+    width: 100%;
+    max-width: var(--shell-width);
+    margin-inline: auto;
+    padding-inline: 24px;
+}
+
+.main {
+    flex: 1 0 auto;
+    padding-block: 56px 80px;
+}
+
+.stack > * + * {
+    margin-top: 24px;
+}
+
+/* --------------------------------------------------------------------------
+   Typography
+
+   Display sizes use the serif with tight negative tracking; the tracking
+   loosens as the size drops, because letter-spacing that flatters a 44px
+   heading makes 20px text feel cramped.
+   -------------------------------------------------------------------------- */
+
+.display-1 {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 5vw, 52px);
+    line-height: 1.08;
+    letter-spacing: -0.028em;
+    font-weight: 500;
+}
+
+.display-2 {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3.4vw, 38px);
+    line-height: 1.15;
+    letter-spacing: -0.022em;
+    font-weight: 500;
+}
+
+.display-3 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    line-height: 1.2;
+    letter-spacing: -0.016em;
+    font-weight: 500;
+}
+
+/* Below 28px the grotesque takes over — the reference's rule exactly. */
+.heading {
+    font-family: var(--font-ui);
+    font-size: 19px;
+    line-height: 1.35;
+    letter-spacing: -0.012em;
+    font-weight: 650;
+}
+
+.eyebrow {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-scholar-blue);
+}
+
+.lede {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+    letter-spacing: -0.006em;
+    max-width: 62ch;
+}
+
+.muted {
+    color: var(--color-text-muted);
+}
+
+.subtle {
+    color: var(--color-text-subtle);
+    font-size: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   Masthead
+   -------------------------------------------------------------------------- */
+
+.masthead {
+    background: var(--color-surface);
+
+    /* The ink rule under the masthead is the logo's outline weight,
+       restated as a structural line. */
+    border-bottom: 1px solid var(--color-border-ink);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.masthead__inner {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    min-height: 72px;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-scholar-blue);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.brand__mark {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    color: var(--color-scholar-blue);
+}
+
+.brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.05;
+}
+
+.brand__text strong {
+    font-family: var(--font-ui);
+    font-size: 17px;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+    color: var(--color-scholar-blue);
+}
+
+.brand__text span {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: auto;
+}
+
+.nav__link {
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 14.5px;
+    font-weight: 550;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.nav__link:hover {
+    background: var(--color-recessed);
+    color: var(--color-text);
+}
+
+.nav__link.is-active {
+    background: var(--color-blue-wash);
+    color: var(--color-scholar-blue);
+}
+
+.masthead__account {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.masthead__email {
+    font-size: 13.5px;
+    color: var(--color-text-muted);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.inline-form {
+    display: inline;
+}
+
+/* --------------------------------------------------------------------------
+   Buttons — full pills against the square surfaces
+   -------------------------------------------------------------------------- */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    font-family: var(--font-ui);
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.004em;
+    line-height: 1.2;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn--primary {
+    background: var(--color-scholar-blue);
+    color: var(--color-text-inverse);
+}
+
+.btn--primary:hover {
+    background: var(--color-blue-hover);
+    color: var(--color-text-inverse);
+}
+
+.btn--primary:active {
+    background: var(--color-blue-active);
+}
+
+.btn--secondary {
+    background: var(--color-surface);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+.btn--secondary:hover {
+    border-color: var(--color-ink);
+    color: var(--color-text);
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--color-text-muted);
+    border-color: transparent;
+}
+
+.btn--ghost:hover {
+    background: var(--color-recessed);
+    color: var(--color-text);
+}
+
+.btn--sm {
+    padding: 7px 15px;
+    font-size: 13.5px;
+}
+
+.btn--lg {
+    padding: 14px 30px;
+    font-size: 16px;
+}
+
+.btn--block {
+    width: 100%;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Cards and panels — 4px, flat, hairline borders
+   -------------------------------------------------------------------------- */
+
+.card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.card__header {
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.card__body {
+    padding: 28px;
+}
+
+.card__footer {
+    padding: 20px 28px;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface-sunken);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Hero — the one navy surface, echoing the logo's band
+   -------------------------------------------------------------------------- */
+
+.hero {
+    background: var(--color-cap-navy);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius);
+    padding: clamp(40px, 6vw, 72px);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero__inner {
+    position: relative;
+    max-width: 60ch;
+}
+
+.hero .eyebrow {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.hero h1 {
+    color: var(--color-text-inverse);
+    margin-block: 16px 20px;
+}
+
+.hero p {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+.hero__actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+}
+
+.hero .btn--secondary {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.45);
+    color: var(--color-text-inverse);
+}
+
+.hero .btn--secondary:hover {
+    border-color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.hero .btn--primary {
+    background: var(--color-surface);
+    color: var(--color-scholar-blue);
+}
+
+.hero .btn--primary:hover {
+    background: var(--color-blue-wash);
+    color: var(--color-scholar-blue);
+}
+
+/* Oversized watermark of the cap outline, clipped by the hero. */
+.hero__watermark {
+    position: absolute;
+    right: -60px;
+    bottom: -80px;
+    width: 340px;
+    color: rgba(255, 255, 255, 0.07);
+    pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   Sections
+   -------------------------------------------------------------------------- */
+
+.section {
+    margin-top: var(--section-gap);
+}
+
+.section__head {
+    margin-bottom: 28px;
+    max-width: 62ch;
+}
+
+.section__head .display-2 {
+    margin-top: 12px;
+}
+
+.section__head p {
+    margin-top: 12px;
+    color: var(--color-text-muted);
+    font-size: 17px;
+}
+
+/* --------------------------------------------------------------------------
+   Forms
+   -------------------------------------------------------------------------- */
+
+.fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.fieldset + .fieldset {
+    margin-top: 12px;
+    padding-top: 36px;
+    border-top: 1px solid var(--color-border);
+}
+
+.fieldset__legend {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+    padding: 0;
+}
+
+.fieldset__number {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-blue-wash);
+    color: var(--color-scholar-blue);
+    font-size: 12.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.fieldset__title {
+    font-size: 19px;
+    font-weight: 650;
+    letter-spacing: -0.012em;
+}
+
+.fieldset__hint {
+    color: var(--color-text-muted);
+    font-size: 14.5px;
+    margin: 0 0 24px 38px;
+}
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 24px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.field--full {
+    grid-column: 1 / -1;
+}
+
+.field__label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.003em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.field__required {
+    color: var(--color-error);
+    font-weight: 700;
+}
+
+.field__optional {
+    color: var(--color-text-subtle);
+    font-weight: 500;
+    font-size: 12.5px;
+}
+
+.field__hint {
+    font-size: 13px;
+    color: var(--color-text-subtle);
+    line-height: 1.45;
+}
+
+.input,
+.select,
+.textarea {
+    width: 100%;
+    padding: 11px 14px;
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--color-text);
+
+    /* Recessed grey rather than white: the reference builds depth from
+       background shifts, so an input reads as carved into the card. */
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.input:hover,
+.select:hover {
+    border-color: var(--color-border-strong);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+    background: var(--color-surface);
+    border-color: var(--color-scholar-blue);
+    outline: 2px solid var(--color-blue-border);
+    outline-offset: 0;
+}
+
+.input::placeholder {
+    color: var(--color-text-subtle);
+}
+
+/* Native select arrow replaced with an inline SVG data URI, which the CSP
+   permits under img-src 'self' data:. */
+.select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%230B0D12' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+}
+
+.input[type="number"] {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Invalid state. `.is-invalid` is set by the client validator; [aria-invalid]
+   is set server-side, so the styling is identical whichever found the error. */
+.input.is-invalid,
+.select.is-invalid,
+.input[aria-invalid="true"],
+.select[aria-invalid="true"] {
+    border-color: var(--color-error);
+    background: var(--color-error-wash);
+}
+
+.field__error {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 550;
+    color: var(--color-error);
+}
+
+.field__error:empty {
+    display: none;
+}
+
+/* --- Checkbox ------------------------------------------------------------ */
+
+.checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+.checkbox:hover {
+    border-color: var(--color-border-strong);
+}
+
+.checkbox input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    margin: 2px 0 0;
+    accent-color: var(--color-scholar-blue);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkbox__text {
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.checkbox__text strong {
+    display: block;
+    font-weight: 600;
+}
+
+.checkbox__text span {
+    color: var(--color-text-subtle);
+    font-size: 13px;
+}
+
+/* --- Conditional fields --------------------------------------------------
+
+   Hidden with [hidden] from PHP for the no-JS case and toggled by
+   validation.js thereafter. The !important is needed because `display:flex`
+   on `.field` would otherwise beat the user-agent's [hidden] rule.
+   ------------------------------------------------------------------------- */
+
+[hidden] {
+    display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Upload widget
+   -------------------------------------------------------------------------- */
+
+.upload {
+    border: 1.5px dashed var(--color-border-strong);
+    border-radius: var(--radius);
+    background: var(--color-surface-sunken);
+    padding: 32px 24px;
+    text-align: center;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+    cursor: pointer;
+    display: block;
+}
+
+.upload:hover,
+.upload.is-dragover {
+    border-color: var(--color-scholar-blue);
+    background: var(--color-blue-wash);
+}
+
+.upload.is-invalid {
+    border-color: var(--color-error);
+    background: var(--color-error-wash);
+}
+
+.upload__icon {
+    margin: 0 auto 14px;
+    width: 40px;
+    height: 40px;
+    color: var(--color-scholar-blue);
+}
+
+.upload__title {
+    font-size: 15.5px;
+    font-weight: 600;
+}
+
+.upload__title u {
+    color: var(--color-scholar-blue);
+    text-underline-offset: 3px;
+}
+
+.upload__hint {
+    font-size: 13px;
+    color: var(--color-text-subtle);
+    margin-top: 6px;
+}
+
+/* The real input is hidden but still focusable and still in the tab order —
+   display:none would remove it from both. */
+.upload__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.upload__input:focus-visible + .upload {
+    outline: 2px solid var(--color-scholar-blue);
+    outline-offset: 2px;
+}
+
+/* --- The selected / stored file chip ------------------------------------- */
+
+.file-chip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.file-chip__badge {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: var(--radius);
+    background: var(--color-blue-wash);
+    color: var(--color-scholar-blue);
+    font-size: 10.5px;
+    font-weight: 750;
+    letter-spacing: 0.03em;
+}
+
+.file-chip__meta {
+    min-width: 0;
+    flex: 1;
+}
+
+/* Both are <span>s inside another <span>, so they need an explicit block
+   display or they run together on one line — and `text-overflow: ellipsis`
+   has no effect on an inline box either. */
+.file-chip__name {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-chip__detail {
+    display: block;
+    font-size: 12.5px;
+    color: var(--color-text-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   Badges and pills
+   -------------------------------------------------------------------------- */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 11px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.008em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.badge--neutral {
+    background: var(--color-recessed);
+    color: var(--color-text-muted);
+    border-color: var(--color-border);
+}
+
+.badge--blue {
+    background: var(--color-blue-wash);
+    color: var(--color-scholar-blue);
+    border-color: var(--color-blue-border);
+}
+
+.badge--success {
+    background: var(--color-success-wash);
+    color: var(--color-success);
+    border-color: var(--color-success-border);
+}
+
+.badge--warning {
+    background: var(--color-warning-wash);
+    color: var(--color-warning);
+    border-color: var(--color-warning-border);
+}
+
+.badge--admin {
+    background: var(--color-ink);
+    color: var(--color-text-inverse);
+}
+
+/* --------------------------------------------------------------------------
+   Flash messages
+   -------------------------------------------------------------------------- */
+
+.flash-stack {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.flash {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 13px 18px;
+    border-radius: var(--radius);
+    border: 1px solid;
+    font-size: 14.5px;
+    font-weight: 500;
+}
+
+.flash__icon {
+    display: grid;
+    place-items: center;
+    width: 19px;
+    height: 19px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: #FFFFFF;
+}
+
+.flash--success {
+    background: var(--color-success-wash);
+    border-color: var(--color-success-border);
+    color: var(--color-success);
+}
+
+.flash--success .flash__icon {
+    background: var(--color-success);
+}
+
+.flash--error {
+    background: var(--color-error-wash);
+    border-color: var(--color-error-border);
+    color: var(--color-error);
+}
+
+.flash--error .flash__icon {
+    background: var(--color-error);
+}
+
+.flash--info {
+    background: var(--color-blue-wash);
+    border-color: var(--color-blue-border);
+    color: var(--color-scholar-blue);
+}
+
+.flash--info .flash__icon {
+    background: var(--color-scholar-blue);
+}
+
+/* Summary of all errors, shown above a rejected form. */
+.error-summary {
+    padding: 18px 22px;
+    border: 1px solid var(--color-error-border);
+    border-left: 3px solid var(--color-error);
+    border-radius: var(--radius);
+    background: var(--color-error-wash);
+}
+
+.error-summary__title {
+    font-weight: 650;
+    color: var(--color-error);
+    font-size: 15px;
+}
+
+.error-summary ul {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.error-summary li {
+    font-size: 14px;
+}
+
+.error-summary a {
+    color: var(--color-error);
+}
+
+/* --------------------------------------------------------------------------
+   Profile view
+   -------------------------------------------------------------------------- */
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 66px;
+    height: 66px;
+    flex-shrink: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-scholar-blue);
+    color: var(--color-text-inverse);
+    font-size: 23px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+}
+
+.avatar--sm {
+    width: 38px;
+    height: 38px;
+    font-size: 13.5px;
+}
+
+.profile-header__meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 9px;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+/* Grid lines are drawn by each cell's own top and left border, pulled back
+   1px so it merges with the neighbour's edge instead of doubling it.
+   The commoner trick — a 1px `gap` over a border-coloured background —
+   also paints the tracks a row never fills, so an odd number of details
+   leaves grey blocks floating at the end. This leaves them white. */
+.detail {
+    padding: 18px 22px;
+    border-top: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+    margin-top: -1px;
+    margin-left: -1px;
+}
+
+.detail__label {
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+}
+
+.detail__value {
+    margin-top: 5px;
+    font-size: 16px;
+    font-weight: 550;
+    letter-spacing: -0.006em;
+    overflow-wrap: anywhere;
+}
+
+.detail__value--muted {
+    color: var(--color-text-subtle);
+    font-weight: 450;
+    font-style: italic;
+}
+
+/* --- Completeness meter -------------------------------------------------- */
+
+.meter {
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-recessed);
+    overflow: hidden;
+}
+
+.meter__fill {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: var(--color-scholar-blue);
+    transition: width 0.4s ease;
+}
+
+/* --------------------------------------------------------------------------
+   Admin directory
+   -------------------------------------------------------------------------- */
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+}
+
+.stat {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+}
+
+.stat__label {
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+}
+
+.stat__value {
+    font-family: var(--font-display);
+    font-size: 38px;
+    line-height: 1.1;
+    letter-spacing: -0.024em;
+    margin-top: 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.filters {
+    display: grid;
+    grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(140px, 1fr)) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+}
+
+.table th,
+.table td {
+    padding: 14px 18px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table thead th {
+    background: var(--color-surface-sunken);
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.table tbody tr:hover {
+    background: var(--color-blue-wash);
+}
+
+.table__sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.table__sort:hover {
+    color: var(--color-scholar-blue);
+}
+
+.table__sort[aria-sort] {
+    color: var(--color-scholar-blue);
+}
+
+.table__person {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.table__name {
+    font-weight: 600;
+}
+
+.table__email {
+    font-size: 12.5px;
+    color: var(--color-text-subtle);
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.pagination__pages {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.pagination__link {
+    display: grid;
+    place-items: center;
+    min-width: 36px;
+    height: 36px;
+    padding-inline: 10px;
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+}
+
+.pagination__link:hover {
+    border-color: var(--color-ink);
+    color: var(--color-text);
+}
+
+.pagination__link.is-current {
+    background: var(--color-scholar-blue);
+    border-color: var(--color-scholar-blue);
+    color: var(--color-text-inverse);
+}
+
+/* --------------------------------------------------------------------------
+   Auth pages
+   -------------------------------------------------------------------------- */
+
+.auth {
+    max-width: 460px;
+    margin-inline: auto;
+}
+
+.auth__head {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.auth__head p {
+    margin-top: 10px;
+    color: var(--color-text-muted);
+}
+
+.auth__alt {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 14.5px;
+    color: var(--color-text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Empty state
+   -------------------------------------------------------------------------- */
+
+.empty {
+    text-align: center;
+    padding: 72px 28px;
+}
+
+.empty__icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 20px;
+    color: var(--color-border-strong);
+}
+
+.empty h2 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: -0.018em;
+    font-weight: 500;
+}
+
+.empty p {
+    margin: 10px auto 26px;
+    max-width: 44ch;
+    color: var(--color-text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Document history
+   -------------------------------------------------------------------------- */
+
+.doc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.doc-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+}
+
+.doc-item--superseded {
+    background: var(--color-surface-sunken);
+    opacity: 0.85;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.footer {
+    flex-shrink: 0;
+    background: var(--color-cap-navy);
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: var(--section-gap);
+}
+
+.footer__inner {
+    padding-block: 36px;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.footer__title {
+    font-family: var(--font-display);
+    font-size: 21px;
+    letter-spacing: -0.014em;
+    color: #FFFFFF;
+}
+
+.footer__note {
+    font-size: 13.5px;
+}
+
+/* Links inherit the brand blue by default, which is unreadable against the
+   navy footer. */
+.footer a {
+    color: #FFFFFF;
+    text-underline-offset: 3px;
+}
+
+.footer a:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* --------------------------------------------------------------------------
+   Utilities
+   -------------------------------------------------------------------------- */
+
+.row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.row--between {
+    justify-content: space-between;
+}
+
+.row--end {
+    justify-content: flex-end;
+}
+
+.grow { flex: 1; }
+.mt-0  { margin-top: 0; }
+.mt-8  { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mt-32 { margin-top: 32px; }
+.mt-40 { margin-top: 40px; }
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+    :root {
+        --section-gap: 64px;
+    }
+
+    .field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filters {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .masthead__inner {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-block: 12px;
+    }
+
+    .nav {
+        order: 3;
+        width: 100%;
+        margin-right: 0;
+        overflow-x: auto;
+    }
+
+    .masthead__email {
+        display: none;
+    }
+}
+
+@media (max-width: 560px) {
+    .shell {
+        padding-inline: 16px;
+    }
+
+    .card__body,
+    .card__header {
+        padding: 20px;
+    }
+
+    .card__footer {
+        padding: 16px 20px;
+    }
+
+    .filters {
+        grid-template-columns: 1fr;
+    }
+
+    .main {
+        padding-block: 32px 56px;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Print — an administrator printing a scholar record
+   -------------------------------------------------------------------------- */
+
+@media print {
+    .masthead,
+    .footer,
+    .card__footer,
+    .btn,
+    .flash-stack {
+        display: none !important;
+    }
+
+    body {
+        background: #FFFFFF;
+    }
+
+    .card,
+    .detail-grid {
+        border-color: #999999;
+    }
+}

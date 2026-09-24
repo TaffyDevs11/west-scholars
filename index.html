@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<!--
+    GENERATED FILE — do not edit.
+    
+    Copied from index.html by bin/build-pages.php.
+    Edit the original and re-run:  php bin/build-pages.php
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WEST Scholars — profile system demo</title>
+<meta name="description" content="Static front-end demo of the WEST Scholars scholar profile management system.">
+
+<!--
+    ==========================================================================
+     GITHUB PAGES ENTRY POINT
+    ==========================================================================
+
+     This file exists ONLY so the project can be previewed on GitHub Pages.
+     GitHub Pages serves static files and does not run PHP, so the real
+     application — which is PHP + MySQL — cannot run there.
+
+     What this demo IS:
+       * the real design system, loaded from assets/css/app.css
+       * the real client-side validator, assets/js/validation.js,
+         running unmodified against the same data-* attributes PHP renders
+       * the real drag-and-drop upload widget, assets/js/upload.js
+       * every screen: landing, sign-in, profile form, profile view and the
+         administrator directory
+
+     What this demo is NOT:
+       * there is no server, so nothing is validated server-side here
+       * "saved" records live in this browser's localStorage and go no
+         further — no database, and uploaded files are never read or stored,
+         only their name, size and type are noted so the UI can be shown
+       * sign-in accepts any of the demo accounts without a password check
+
+     THE REAL APPLICATION
+     --------------------
+     Run it with PHP and MySQL — see README.md, or:
+
+         php bin/install.php migrate
+         php -S localhost:8000 -t public public/index.php
+
+     Deploying to Hostinger: docs/DEPLOYMENT.md, and the commented blocks in
+     config/config.example.php and public/.htaccess.
+
+     PUBLISHING THIS DEMO
+     --------------------
+     GitHub -> Settings -> Pages -> Source: "Deploy from a branch",
+     branch `main`, folder `/ (root)`. The `.nojekyll` file beside this one
+     stops Jekyll from processing the repository.
+    ==========================================================================
+-->
+
+<!-- The real stylesheet, shared with the PHP application. -->
+<link rel="stylesheet" href="assets/css/app.css">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+
+<style>
+    /* Demo-only chrome. Nothing here belongs to the application itself —
+       it is the banner that marks this as a static preview. */
+    .demo-banner {
+        background: var(--color-ink);
+        color: #FFFFFF;
+        font-size: 13.5px;
+        line-height: 1.5;
+    }
+
+    .demo-banner__inner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-block: 10px;
+        flex-wrap: wrap;
+    }
+
+    .demo-banner strong {
+        background: var(--color-scholar-blue);
+        border-radius: var(--radius-pill);
+        padding: 2px 10px;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .demo-banner a {
+        color: #FFFFFF;
+        text-underline-offset: 3px;
+    }
+
+    .demo-banner__reset {
+        margin-left: auto;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: #FFFFFF;
+        border-radius: var(--radius-pill);
+        padding: 4px 14px;
+        font: inherit;
+        font-size: 12.5px;
+        cursor: pointer;
+    }
+
+    .demo-banner__reset:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="demo-banner">
+    <div class="shell demo-banner__inner">
+        <strong>Static demo</strong>
+        <span>
+            Front end only — no PHP or MySQL runs on GitHub Pages. Records are kept
+            in this browser and go no further.
+        </span>
+        <button class="demo-banner__reset" type="button" data-demo-reset>Reset demo data</button>
+    </div>
+</div>
+
+<header class="masthead">
+    <div class="shell masthead__inner">
+        <a class="brand" href="#/">
+            <span class="brand__mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32" width="32" height="32" role="presentation">
+                    <path d="M16 5 2 11l14 6 14-6-14-6Z" fill="currentColor"/>
+                    <path d="M7 14.5V21c0 2.5 4 4.5 9 4.5s9-2 9-4.5v-6.5l-9 3.9-9-3.9Z"
+                          fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+                </svg>
+            </span>
+            <span class="brand__text">
+                <strong>WEST</strong>
+                <span>Scholars</span>
+            </span>
+        </a>
+
+        <nav class="nav" aria-label="Main" data-demo-nav></nav>
+
+        <div class="masthead__account" data-demo-account></div>
+    </div>
+</header>
+
+<div class="shell flash-stack" data-demo-flash></div>
+
+<main id="main" class="main" data-demo-view></main>
+
+<footer class="footer">
+    <div class="shell footer__inner">
+        <div>
+            <p class="footer__title">WEST Scholars</p>
+            <p class="footer__note">Scholar profile management</p>
+        </div>
+        <p class="footer__note">
+            Static demo of a PHP &amp; MySQL application &middot;
+            <a href="https://github.com/">source</a>
+        </p>
+    </div>
+</footer>
+
+<!--
+    Only the demo controller is loaded here.
+
+    The real validator and upload widget (assets/js/*.js) are each an
+    IIFE that looks for [data-profile-form] the moment it runs and returns
+    immediately if it is absent. This demo renders its views into the page
+    after load, so at this point that form does not exist yet and both would
+    simply do nothing.
+
+    demo.js therefore injects them as fresh <script> elements each time it
+    renders the profile form — appending a script element always executes
+    it, even when the file is already cached — so the form is driven by the
+    application's genuine, unmodified client-side code rather than by a
+    reimplementation that could drift away from it.
+-->
+<script src="assets/js/demo.js" defer></script>
+</body>
+</html>
