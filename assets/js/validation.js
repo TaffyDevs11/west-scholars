@@ -1,9 +1,3 @@
-/*
- * GENERATED FILE — do not edit.
- * 
- * Copied from public/assets/js/validation.js by bin/build-pages.php.
- * Edit the original and re-run:  php bin/build-pages.php
- */
 /**
  * Client-side validation for the scholar profile form.
  *
@@ -52,6 +46,13 @@
             .map(function (value) { return value.trim().toLowerCase(); })
             .filter(Boolean),
         companyStatuses: (form.dataset.companyStatuses || 'working,entrepreneurship')
+            .split(',')
+            .map(function (value) { return value.trim(); })
+            .filter(Boolean),
+
+        // Which attachment statuses require a host company and a start date.
+        // Read from the server, like every other limit here.
+        attachmentStatuses: (form.dataset.attachmentStatuses || 'in_progress,completed')
             .split(',')
             .map(function (value) { return value.trim(); })
             .filter(Boolean),
@@ -272,6 +273,116 @@
     }
 
     /**
+     * Attachment company and start date.
+     *
+     * Mirrors ProfileValidator::validateAttachment(): both are required once
+     * a placement exists, and neither is checked when the status is N/A -
+     * because the server discards them in that case rather than storing
+     * them.
+     */
+    function validateAttachmentCompany() {
+        var input = field('attachment_company');
+        var status = field('attachment_status').value;
+
+        if (rules.attachmentStatuses.indexOf(status) === -1) {
+            return setError(input, '');
+        }
+
+        var value = clean(input.value);
+
+        if (value === '') {
+            return setError(input, 'Please name the company you are attached to.');
+        }
+
+        if (value.length > 150) {
+            return setError(input, 'The company name must be 150 characters or fewer.');
+        }
+
+        return setError(input, '');
+    }
+
+    function validateAttachmentStart() {
+        var input = field('attachment_start');
+        var status = field('attachment_status').value;
+
+        if (rules.attachmentStatuses.indexOf(status) === -1) {
+            return setError(input, '');
+        }
+
+        var value = clean(input.value);
+
+        if (value === '') {
+            return setError(input, 'Please give the date the attachment started.');
+        }
+
+        /*
+         * <input type="date"> yields YYYY-MM-DD, and a browser that does not
+         * support the type falls back to a text box - so the format is
+         * checked rather than assumed.
+         */
+        var parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+        if (!parts) {
+            return setError(input, 'Enter the start date as a real calendar date.');
+        }
+
+        var year = parseInt(parts[1], 10);
+        var month = parseInt(parts[2], 10);
+        var day = parseInt(parts[3], 10);
+
+        // Date() rolls 2025-02-31 forward to 3 March rather than rejecting
+        // it, so the round-trip is compared back against what was typed.
+        var date = new Date(year, month - 1, day);
+
+        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+            return setError(input, 'Enter the start date as a real calendar date.');
+        }
+
+        if (year < rules.yearMin || year > rules.yearMax) {
+            return setError(input, 'The start date must fall between ' + rules.yearMin + ' and ' + rules.yearMax + '.');
+        }
+
+        var enrolled = parseInt(clean(field('year_enrolled').value), 10);
+
+        if (!isNaN(enrolled) && year < enrolled) {
+            return setError(input, 'The attachment cannot have started before you enrolled.');
+        }
+
+        return setError(input, '');
+    }
+
+    /**
+     * Phone number.
+     *
+     * Deliberately permissive - digits, spaces, brackets, hyphens and a
+     * leading plus - because numbering plans differ by country and a strict
+     * pattern would reject valid numbers from somewhere.
+     */
+    function validatePhone() {
+        var input = field('phone');
+
+        if (!input) {
+            return true;
+        }
+
+        var value = clean(input.value);
+
+        if (value === '') {
+            return setError(input, '');
+        }
+
+        if (value.length > 30) {
+            return setError(input, 'The phone number must be 30 characters or fewer.');
+        }
+
+        if (!/^\+?[0-9 ()\-]{6,}$/.test(value)) {
+            return setError(input, 'Enter a phone number using digits, spaces, brackets or hyphens.');
+        }
+
+        return setError(input, '');
+    }
+
+    /**
      * File checks the browser can do.
      *
      * Only the extension and the size - the browser cannot read magic bytes,
@@ -387,6 +498,45 @@
         if (requiredMark) {
             requiredMark.hidden = status !== 'graduated';
         }
+
+        // --- Attachment ------------------------------------------------
+        //
+        // Same pattern as the company field: hidden AND disabled when the
+        // status is N/A, so nothing irrelevant is posted. The server
+        // discards those values anyway; this keeps the request honest.
+        var attachmentStatus = field('attachment_status');
+
+        if (attachmentStatus) {
+            var showAttachment = rules.attachmentStatuses.indexOf(attachmentStatus.value) !== -1;
+            var companyWrap = form.querySelector('[data-attachment-field]');
+            var startWrap = form.querySelector('[data-attachment-start-field]');
+            var attachmentCompany = field('attachment_company');
+            var attachmentStart = field('attachment_start');
+
+            if (companyWrap) {
+                companyWrap.hidden = !showAttachment;
+            }
+
+            if (startWrap) {
+                startWrap.hidden = !showAttachment;
+            }
+
+            if (attachmentCompany) {
+                attachmentCompany.disabled = !showAttachment;
+
+                if (!showAttachment) {
+                    setError(attachmentCompany, '');
+                }
+            }
+
+            if (attachmentStart) {
+                attachmentStart.disabled = !showAttachment;
+
+                if (!showAttachment) {
+                    setError(attachmentStart, '');
+                }
+            }
+        }
     }
 
     /* ---------------------------------------------------------------
@@ -406,6 +556,9 @@
             validateFieldOfStudy(),
             validateSelect(field('employment_status'), 'Employment status is required.'),
             validateCompany(),
+            validateAttachmentCompany(),
+            validateAttachmentStart(),
+            validatePhone(),
             validateUpload()
         ];
 
@@ -415,10 +568,17 @@
     var validators = {
         first_name: function () { validateName(field('first_name'), 'First name'); },
         surname: function () { validateName(field('surname'), 'Surname'); },
-        year_enrolled: function () { validateYearEnrolled(); validateGraduationYear(); },
+        year_enrolled: function () {
+            validateYearEnrolled();
+            validateGraduationYear();
+            validateAttachmentStart();
+        },
         graduation_year: validateGraduationYear,
         field_of_study: validateFieldOfStudy,
         company_name: validateCompany,
+        attachment_company: validateAttachmentCompany,
+        attachment_start: validateAttachmentStart,
+        phone: validatePhone,
         academic_results: validateUpload
     };
 
@@ -464,6 +624,16 @@
         syncConditionalFields();
         validateCompany();
     });
+
+    var attachmentStatusField = field('attachment_status');
+
+    if (attachmentStatusField) {
+        attachmentStatusField.addEventListener('change', function () {
+            syncConditionalFields();
+            validateAttachmentCompany();
+            validateAttachmentStart();
+        });
+    }
 
     form.addEventListener('submit', function (event) {
         if (!validateAll()) {

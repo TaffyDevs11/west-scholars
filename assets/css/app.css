@@ -1,9 +1,3 @@
-/*
- * GENERATED FILE — do not edit.
- * 
- * Copied from public/assets/css/app.css by bin/build-pages.php.
- * Edit the original and re-run:  php bin/build-pages.php
- */
 /* ==========================================================================
    WEST Scholars — design system
    ==========================================================================
@@ -1191,9 +1185,12 @@ a:hover {
     font-variant-numeric: tabular-nums;
 }
 
+/* Search, then the four filter selects, then the buttons. Declared
+   explicitly rather than left to auto-placement so the row does not silently
+   reflow when a filter is added. */
 .filters {
     display: grid;
-    grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(140px, 1fr)) auto;
+    grid-template-columns: minmax(200px, 1.8fr) repeat(4, minmax(130px, 1fr)) auto;
     gap: 12px;
     align-items: end;
 }
@@ -1566,4 +1563,106 @@ a:hover {
     .detail-grid {
         border-color: #999999;
     }
+}
+
+/* --------------------------------------------------------------------------
+   Announcements
+   -------------------------------------------------------------------------- */
+
+.announcement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.announcement {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+}
+
+/* A pinned notice gets the brand rule down its edge — the same device the
+   error summary uses, so "this one matters" reads consistently. */
+.announcement--pinned {
+    border-left: 3px solid var(--color-scholar-blue);
+    background: var(--color-blue-wash);
+}
+
+.announcement__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.announcement__badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.announcement__title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    line-height: 1.25;
+    letter-spacing: -0.016em;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.announcement__body {
+    margin-top: 14px;
+    max-width: 70ch;
+}
+
+.announcement__body p {
+    margin-top: 12px;
+    line-height: 1.65;
+    color: var(--color-text-muted);
+    overflow-wrap: anywhere;
+}
+
+.announcement__body p:first-child {
+    margin-top: 0;
+}
+
+.announcement__meta {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--color-border);
+    font-size: 13px;
+    color: var(--color-text-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   Directory contact cell
+   -------------------------------------------------------------------------- */
+
+.contact-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.contact-cell__link {
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Textarea
+
+   Shares the input's recessed surface, but must be resizable vertically and
+   never horizontally — a textarea dragged wider than its container breaks
+   the card's layout.
+   -------------------------------------------------------------------------- */
+
+.textarea {
+    resize: vertical;
+    min-height: 160px;
+    font-family: var(--font-ui);
+    line-height: 1.6;
 }
