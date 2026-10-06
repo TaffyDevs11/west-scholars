@@ -48,7 +48,8 @@
         yearMax: new Date().getFullYear() + 10,
         maxUploadBytes: 5 * 1024 * 1024,
         allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'webp'],
-        companyStatuses: ['working', 'entrepreneurship']
+        // Attachment statuses that require a host company and a start date.
+        attachmentStatuses: ['in_progress', 'completed']
     };
 
     // Mirrors ProfileValidator::GRADUATION_STATUSES / EMPLOYMENT_STATUSES.
@@ -57,14 +58,28 @@
         current_student: 'Current Student'
     };
 
+    /*
+     * 'Student' was retired: a scholar who is studying and not working has
+     * no job, which 'No job' already says. Carrying both made the directory
+     * filter ambiguous.
+     */
     var EMPLOYMENT_STATUSES = {
         no_job: 'No job',
         entrepreneurship: 'Entrepreneurship',
-        working: 'Working',
-        student: 'Student'
+        working: 'Working'
     };
 
-    var STORAGE_KEY = 'west-scholars-demo-v1';
+    // Mirrors ProfileValidator::ATTACHMENT_STATUSES.
+    var ATTACHMENT_STATUSES = {
+        not_applicable: 'N/A',
+        in_progress: 'In progress',
+        completed: 'Completed'
+    };
+
+    // Bumped when the stored shape changes, so a returning visitor with an
+    // older record in localStorage gets a fresh seed rather than a page that
+    // breaks on a missing field.
+    var STORAGE_KEY = 'west-scholars-demo-v3';
 
     /* ===============================================================
      | Seed data
@@ -75,19 +90,95 @@
 
     function seedScholars() {
         return [
-            row(1, 'Tendai', 'Moyo', 2019, 2023, 'graduated', 'Civil Engineering', 'working', 'Bridgeworks Ltd', false, 'transcript-2023.pdf'),
-            row(2, 'Anna', 'Ncube', 2020, null, 'current_student', 'Medicine', 'student', null, false, 'results-sem2.pdf'),
-            row(3, 'Farai', 'Chirwa', 2019, 2023, 'graduated', 'Computer Science', 'entrepreneurship', 'Chirwa Labs', false, 'final-transcript.pdf'),
-            row(4, 'Rudo', 'Banda', 2021, null, 'current_student', 'Law', 'no_job', null, false, null),
-            row(5, 'Kuda', 'Zimuto', 2018, 2022, 'graduated', 'Computer Science', 'working', null, true, 'degree-results.pdf'),
-            row(6, 'Chipo', 'Dube', 2022, null, 'current_student', 'Accounting', 'student', null, false, 'year1-results.png'),
-            row(7, 'Nyasha', 'Sibanda', 2020, 2024, 'graduated', 'Medicine', 'working', 'Parirenyatwa Group', false, 'mbchb-transcript.pdf'),
-            row(8, 'Tapiwa', 'Mutasa', 2021, null, 'current_student', 'Electrical Engineering', 'student', null, false, null),
-            row(9, 'Rumbi', 'Gwenzi', 2018, 2022, 'graduated', 'Economics', 'entrepreneurship', 'Gwenzi Advisory', false, 'transcript.pdf')
+            row(1, 'Tendai', 'Moyo', 2019, 2023, 'graduated', 'Civil Engineering', 'working',
+                'transcript-2023.pdf', 'completed', 'Econet Wireless', '2021-06-07', '2021-12-10',
+                '+263 77 101 2020', 'tendai.moyo@gmail.com', true, false,
+                [['Bridgeworks Ltd', 'Site Engineer', 2024, null], ['Econet Wireless', 'Graduate trainee', 2023, 2024]]),
+
+            row(2, 'Anna', 'Ncube', 2020, null, 'current_student', 'Medicine', 'no_job',
+                'results-sem2.pdf', 'in_progress', 'Parirenyatwa Hospital', '2026-01-12', null,
+                '+263 71 334 5566', 'anna.ncube@gmail.com', true, false, []),
+
+            row(3, 'Farai', 'Chirwa', 2019, 2023, 'graduated', 'Computer Science', 'entrepreneurship',
+                'final-transcript.pdf', 'completed', 'Liquid Intelligent Technologies', '2021-07-05', '2022-01-05',
+                '+263 77 889 1200', 'farai.chirwa@gmail.com', true, false,
+                [['Chirwa Labs', 'Founder', 2023, null], ['Mega Market', 'Graduate trainee', 2021, 2023]]),
+
+            row(4, 'Rudo', 'Banda', 2021, null, 'current_student', 'Law', 'no_job',
+                null, 'not_applicable', null, null, null,
+                null, null, true, false, []),
+
+            // Opted out of sharing both contact details and employers, so the
+            // demo shows what a withheld record looks like to a peer.
+            row(5, 'Kuda', 'Zimuto', 2018, 2022, 'graduated', 'Computer Science', 'working',
+                'degree-results.pdf', 'completed', 'Old Mutual', '2020-06-01', '2020-12-01',
+                '+263 78 445 9911', 'kuda.zimuto@gmail.com', false, true,
+                [['Old Mutual', 'Systems Analyst', 2022, null]]),
+
+            row(6, 'Chipo', 'Dube', 2022, null, 'current_student', 'Accounting', 'no_job',
+                'year1-results.png', 'not_applicable', null, null, null,
+                null, null, true, false, []),
+
+            row(7, 'Nyasha', 'Sibanda', 2020, 2024, 'graduated', 'Medicine', 'working',
+                'mbchb-transcript.pdf', 'completed', 'Harare Central Hospital', '2022-02-14', '2022-08-14',
+                '+263 77 220 3344', 'nyasha.sibanda@gmail.com', true, false,
+                [['Parirenyatwa Group', 'Medical Officer', 2024, null]]),
+
+            row(8, 'Tapiwa', 'Mutasa', 2021, null, 'current_student', 'Electrical Engineering', 'no_job',
+                null, 'in_progress', 'ZESA Holdings', '2026-02-02', null,
+                null, null, true, false, []),
+
+            // The example the programme asked for, verbatim.
+            row(9, 'Kudzaishe', 'Muteme', 2018, 2022, 'graduated', 'Mining Engineering', 'working',
+                'transcript.pdf', 'completed', 'Unki Mine', '2021-05-10', '2021-11-10',
+                '+263 71 552 8080', 'kudzaishe.muteme@gmail.com', true, false,
+                [['Unki Mine', 'Junior Engineer', 2025, null], ['Mega Market', 'Graduate trainee', 2023, 2025]])
         ];
     }
 
-    function row(id, first, last, enrolled, graduated, status, field, employment, company, undisclosed, document) {
+    /** Announcements the administrator has posted. */
+    function seedAnnouncements() {
+        var today = new Date();
+        var recent = new Date(today.getTime() - 2 * 86400000).toISOString().slice(0, 10);
+        var older = new Date(today.getTime() - 26 * 86400000).toISOString().slice(0, 10);
+
+        return [
+            {
+                id: 1,
+                title: 'Termly scholars meeting — Saturday 14 March',
+                body: 'The termly meeting is on Saturday 14 March at 10am in the Harare office.\n\n'
+                    + 'Please bring your latest results slip. Alumni are very welcome — this is '
+                    + 'the best chance of the term to meet the new intake.',
+                is_pinned: true,
+                published_at: recent,
+                author: 'admin@westscholars.org'
+            },
+            {
+                id: 2,
+                title: 'Attachment placements now open',
+                body: 'Placement applications for the coming year open on Monday.\n\n'
+                    + 'Update the attachment section of your profile once you have accepted a '
+                    + 'placement, so the programme can keep track of where everyone is.',
+                is_pinned: false,
+                published_at: recent,
+                author: 'admin@westscholars.org'
+            },
+            {
+                id: 3,
+                title: 'Results deadline reminder',
+                body: 'Please upload your end-of-year results before the end of the month.\n\n'
+                    + 'Your results are visible only to you and to programme administrators — '
+                    + 'they are never shown to other scholars in the directory.',
+                is_pinned: false,
+                published_at: older,
+                author: 'admin@westscholars.org'
+            }
+        ];
+    }
+
+    function row(id, first, last, enrolled, graduated, status, field, employment,
+                 document, attachmentStatus, attachmentCompany, attachmentStart, attachmentEnd,
+                 phone, personalEmail, contactVisible, employmentUndisclosed, career) {
         return {
             id: id,
             email: (first + '.' + last).toLowerCase() + '@example.org',
@@ -98,9 +189,28 @@
             graduation_status: status,
             field_of_study: field,
             employment_status: employment,
-            company_name: company,
-            company_undisclosed: undisclosed,
-            updated_at: '2026-09-0' + ((id % 9) + 1) + ' 10:00:00',
+            employment_undisclosed: employmentUndisclosed,
+            attachment_status: attachmentStatus,
+            attachment_company: attachmentCompany,
+            attachment_start: attachmentStart,
+            attachment_end: attachmentEnd,
+            phone: phone,
+            personal_email: personalEmail,
+            contact_visible: contactVisible,
+
+            // [company, job title, start year, end year] - a null end year
+            // means "to present", which is what identifies the current role.
+            career: (career || []).map(function (entry, index) {
+                return {
+                    id: id * 100 + index,
+                    company: entry[0],
+                    job_title: entry[1],
+                    start_year: entry[2],
+                    end_year: entry[3]
+                };
+            }),
+
+            updated_at: '2026-10-0' + ((id % 9) + 1) + ' 10:00:00',
             documents: document
                 ? [{
                     id: id * 10,
@@ -135,7 +245,9 @@
             if (raw) {
                 state = JSON.parse(raw);
 
-                if (state && state.scholars) {
+                // Both keys must be present, or an older stored shape would
+                // be loaded into code that now expects announcements too.
+                if (state && state.scholars && state.announcements) {
                     return state;
                 }
             }
@@ -143,7 +255,13 @@
             /* Unavailable or corrupt — fall through to a fresh seed. */
         }
 
-        state = { scholars: seedScholars(), session: null, nextId: 10 };
+        state = {
+            scholars: seedScholars(),
+            announcements: seedAnnouncements(),
+            session: null,
+            nextId: 10,
+            nextAnnouncementId: 4
+        };
         save();
 
         return state;
@@ -214,6 +332,18 @@
             .replace(/'/g, '&#039;');
     }
 
+    /**
+     * Collapse whitespace and trim — the mirror of Str::clean() in PHP.
+     *
+     * Note this is NOT used on an announcement body: collapsing whitespace
+     * there would destroy the paragraph breaks the notice is written with.
+     */
+    function clean(value) {
+        return String(value === null || value === undefined ? '' : value)
+            .replace(/[\s ]+/g, ' ')
+            .trim();
+    }
+
     function humanBytes(bytes) {
         if (bytes < 1024) {
             return bytes + ' B';
@@ -255,21 +385,159 @@
             : document.type.split('/')[1].toUpperCase();
     }
 
-    function expectsCompany(scholar) {
-        return CONFIG.companyStatuses.indexOf(scholar.employment_status) !== -1;
-    }
+    /** The open-ended role IS the current one. */
+    function currentRole(scholar) {
+        var career = scholar.career || [];
 
-    /** The three genuinely different company states — mirrors Profile::companyDisplay(). */
-    function companyDisplay(scholar) {
-        if (!expectsCompany(scholar)) {
-            return 'Not applicable';
+        for (var i = 0; i < career.length; i++) {
+            if (career[i].end_year === null || career[i].end_year === undefined) {
+                return career[i];
+            }
         }
 
-        if (scholar.company_undisclosed) {
+        return null;
+    }
+
+    /** Newest first, with the current role leading. */
+    function sortedCareer(scholar) {
+        return (scholar.career || []).slice().sort(function (a, b) {
+            var aCurrent = a.end_year === null || a.end_year === undefined;
+            var bCurrent = b.end_year === null || b.end_year === undefined;
+
+            if (aCurrent !== bCurrent) {
+                return aCurrent ? -1 : 1;
+            }
+
+            return b.start_year - a.start_year;
+        });
+    }
+
+    function rolePeriod(role) {
+        var end = (role.end_year === null || role.end_year === undefined) ? 'present' : role.end_year;
+
+        return role.start_year + ' to ' + end;
+    }
+
+    function roleSummary(role) {
+        return role.job_title + ' at ' + role.company;
+    }
+
+    /**
+     * The career history as this viewer may see it.
+     *
+     * Unlike the old single company field, which was discarded outright when
+     * withheld, the records are always kept - the scholar and the programme
+     * need them. They are simply not shown to anyone else.
+     */
+    function careerVisibleTo(scholar) {
+        var session = currentUser();
+
+        if (!session) {
+            return [];
+        }
+
+        if (session.role === 'admin' || session.scholarId === scholar.id) {
+            return sortedCareer(scholar);
+        }
+
+        return scholar.employment_undisclosed ? [] : sortedCareer(scholar);
+    }
+
+    /** What the directory's Employment cell shows. */
+    function employmentDisplay(scholar) {
+        if (scholar.employment_undisclosed) {
             return 'Prefer not to disclose';
         }
 
-        return scholar.company_name || 'Not provided';
+        var current = currentRole(scholar);
+
+        if (current) {
+            return roleSummary(current);
+        }
+
+        var sorted = sortedCareer(scholar);
+
+        if (sorted.length) {
+            return 'Previously ' + roleSummary(sorted[0]);
+        }
+
+        return scholar.employment_status === 'no_job' ? 'Not working' : 'Not provided';
+    }
+
+    /** The personal address when given; the sign-in one otherwise. */
+    function bestEmail(scholar) {
+        return scholar.personal_email || scholar.email;
+    }
+
+    function attachmentPeriod(scholar) {
+        var start = formatDate(scholar.attachment_start);
+
+        if (!start) {
+            return '';
+        }
+
+        var end = formatDate(scholar.attachment_end);
+
+        if (end) {
+            return start + ' to ' + end;
+        }
+
+        return scholar.attachment_status === 'in_progress' ? start + ' to present' : start;
+    }
+
+    function hasAttachment(scholar) {
+        return CONFIG.attachmentStatuses.indexOf(scholar.attachment_status) !== -1;
+    }
+
+    function attachmentLabel(scholar) {
+        return ATTACHMENT_STATUSES[scholar.attachment_status] || 'N/A';
+    }
+
+    /** "7 June 2021", or '' when there is no date. */
+    function formatDate(value) {
+        if (!value) {
+            return '';
+        }
+
+        var parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+        if (!parts) {
+            return value;
+        }
+
+        var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+
+        return parseInt(parts[3], 10) + ' ' + months[parseInt(parts[2], 10) - 1] + ' ' + parts[1];
+    }
+
+    /**
+     * May the viewer see this scholar's phone number and e-mail?
+     *
+     * Mirrors ProfileRepository::applyContactVisibility(). In the real
+     * application the withholding happens in the data layer, so the values
+     * never reach the page at all; here the check is made at render time,
+     * which is the closest a browser-only demo can get.
+     */
+    function contactVisibleTo(scholar) {
+        var session = currentUser();
+
+        if (!session) {
+            return false;
+        }
+
+        if (session.role === 'admin' || session.scholarId === scholar.id) {
+            return true;
+        }
+
+        return Boolean(scholar.contact_visible);
+    }
+
+    /** May the viewer see this scholar's academic results? */
+    function canSeeResults(scholar) {
+        var session = currentUser();
+
+        return Boolean(session && (session.role === 'admin' || session.scholarId === scholar.id));
     }
 
     function academicSummary(scholar) {
@@ -376,12 +644,16 @@
             return;
         }
 
-        if (session.role === 'admin') {
-            nav.innerHTML = link('/directory', 'Scholar directory', '/directory');
-        } else {
-            nav.innerHTML = link('/profile', 'My profile', '/profile') +
-                link('/edit', 'Edit profile', '/edit');
-        }
+        /*
+         * The directory and the announcements are open to every member - the
+         * programme uses them as a networking platform - so both appear for
+         * scholars as well as administrators.
+         */
+        nav.innerHTML =
+            (session.role === 'admin' ? '' : link('/profile', 'My profile', '/profile')) +
+            link('/directory', 'Scholars', '/directory') +
+            link('/announcements', 'Announcements', '/announcements') +
+            (session.role === 'admin' ? '' : link('/edit', 'Edit profile', '/edit'));
 
         account.innerHTML =
             '<span class="masthead__email">' + e(session.email) + '</span>' +
@@ -397,8 +669,10 @@
         var steps = [
             ['1', 'Personal information', 'Your name as it appears on your academic records.'],
             ['2', 'Academic status', 'Year enrolled, graduation status and field of study.'],
-            ['3', 'Employment', 'What you are doing now, and where — if you wish to say.'],
-            ['4', 'Academic results', 'A PDF or photo of your latest transcript.']
+            ['3', 'Career history', 'Every role so far — "Graduate trainee, 2023 to 2025".'],
+            ['4', 'Industrial attachment', 'Where you were placed, and when it ran.'],
+            ['5', 'Contact details', 'How other scholars can reach you, if you choose.'],
+            ['6', 'Academic results', 'A PDF or photo of your latest transcript.']
         ];
 
         var cards = steps.map(function (step) {
@@ -430,12 +704,39 @@
             '<section class="section">' +
                 '<div class="section__head">' +
                     '<p class="eyebrow">What you will need</p>' +
-                    '<h2 class="display-2">Four short sections</h2>' +
+                    '<h2 class="display-2">Six short sections</h2>' +
                     '<p>Most scholars complete this in a few minutes. Everything except your ' +
                     'academic results can be changed later.</p>' +
                 '</div>' +
                 '<div class="stat-grid">' + cards + '</div>' +
             '</section>' +
+            '<section class="section">' +
+                '<div class="section__head">' +
+                    '<p class="eyebrow">Once you are in</p>' +
+                    '<h2 class="display-2">More than a form</h2>' +
+                '</div>' +
+                '<div class="stat-grid">' +
+                    '<div class="stat">' +
+                        '<p class="eyebrow">Announcements</p>' +
+                        '<p class="heading mt-8">Meetings and programme news</p>' +
+                        '<p class="muted mt-8" style="font-size:14.5px">Meeting dates, deadlines and ' +
+                        'news from the programme, pinned so the important ones stay at the top.</p>' +
+                    '</div>' +
+                    '<div class="stat">' +
+                        '<p class="eyebrow">Scholar directory</p>' +
+                        '<p class="heading mt-8">Find scholars and alumni</p>' +
+                        '<p class="muted mt-8" style="font-size:14.5px">Search by name, field or employer, ' +
+                        'and get in touch with those who share their details.</p>' +
+                    '</div>' +
+                    '<div class="stat">' +
+                        '<p class="eyebrow">Career history</p>' +
+                        '<p class="heading mt-8">Follow the whole path</p>' +
+                        '<p class="muted mt-8" style="font-size:14.5px">Every role, not just the current ' +
+                        'one — so you can see how careers actually unfold.</p>' +
+                    '</div>' +
+                '</div>' +
+            '</section>' +
+
             '<section class="section">' +
                 '<div class="card"><div class="card__body">' +
                     '<div class="row row--between">' +
@@ -515,12 +816,38 @@
     function viewForm(scholar, isAdminEditing) {
         var employment = scholar ? scholar.employment_status : '';
         var graduation = scholar ? scholar.graduation_status : '';
-        var undisclosed = scholar ? scholar.company_undisclosed : false;
-        var showCompany = CONFIG.companyStatuses.indexOf(employment) !== -1;
+        var undisclosed = scholar ? scholar.employment_undisclosed : false;
         var document_ = scholar ? currentDocument(scholar) : null;
 
-        function options(map, selected) {
-            var html = '<option value="">Select status…</option>';
+        // Stored roles plus one spare, so there is somewhere to type the next.
+        var careerRows = scholar ? sortedCareer(scholar).map(function (r) {
+            return {
+                company: r.company,
+                job_title: r.job_title,
+                start_year: r.start_year,
+                end_year: (r.end_year === null || r.end_year === undefined) ? '' : r.end_year
+            };
+        }) : [];
+
+        careerRows.push({ company: '', job_title: '', start_year: '', end_year: '' });
+
+        var attachment = scholar ? scholar.attachment_status : 'not_applicable';
+        var showAttachment = CONFIG.attachmentStatuses.indexOf(attachment) !== -1;
+
+        // Ticked by default for a new profile: the directory exists to
+        // connect people, and the phone field starts empty so nothing is
+        // shared until one is deliberately entered.
+        var contactVisible = scholar ? Boolean(scholar.contact_visible) : true;
+
+        /**
+         * Build <option> markup.
+         *
+         * `blank` is the placeholder row; passing null omits it, which is
+         * what the attachment select needs - "N/A" is a real answer there,
+         * not an absence, so there is nothing to prompt for.
+         */
+        function options(map, selected, blank) {
+            var html = blank === null ? '' : '<option value="">' + e(blank || 'Select status…') + '</option>';
 
             Object.keys(map).forEach(function (key) {
                 html += '<option value="' + e(key) + '"' +
@@ -575,7 +902,7 @@
                 'data-year-max="' + CONFIG.yearMax + '" ' +
                 'data-max-upload-bytes="' + CONFIG.maxUploadBytes + '" ' +
                 'data-allowed-extensions="' + e(CONFIG.allowedExtensions.join(',')) + '" ' +
-                'data-company-statuses="' + e(CONFIG.companyStatuses.join(',')) + '" ' +
+                'data-attachment-statuses="' + e(CONFIG.attachmentStatuses.join(',')) + '" ' +
                 'data-has-document="' + (document_ ? '1' : '0') + '">' +
 
             '<div class="card__body stack">' +
@@ -642,11 +969,12 @@
                 '<fieldset class="fieldset">' +
                     '<legend class="fieldset__legend">' +
                         '<span class="fieldset__number" aria-hidden="true">3</span>' +
-                        '<span class="fieldset__title">Employment</span>' +
+                        '<span class="fieldset__title">Employment &amp; career</span>' +
                     '</legend>' +
-                    '<p class="fieldset__hint">What you are doing now. This helps the programme report on scholar outcomes.</p>' +
+                    '<p class="fieldset__hint">Every role so far, not just the current one &mdash; ' +
+                    'leave the end year blank for the job you are in now.</p>' +
                     '<div class="field-grid">' +
-                        '<div class="field">' +
+                        '<div class="field field--full">' +
                             '<label class="field__label" for="employment_status">Employment status ' +
                             '<span class="field__required" aria-hidden="true">*</span></label>' +
                             '<select class="select" id="employment_status" name="employment_status">' +
@@ -654,33 +982,149 @@
                             '</select>' +
                             '<p class="field__error" id="employment_status-error"></p>' +
                         '</div>' +
+                    '</div>' +
 
-                        '<div class="field" data-company-field' + (showCompany ? '' : ' hidden') + '>' +
-                            '<label class="field__label" for="company_name">Company name ' +
-                            '<span class="field__required" aria-hidden="true">*</span></label>' +
-                            '<input class="input" type="text" id="company_name" name="company_name" ' +
-                                'maxlength="150" placeholder="Where you work, or your own company"' +
-                                (undisclosed ? ' disabled' : '') +
-                                ' value="' + e(scholar && scholar.company_name ? scholar.company_name : '') + '">' +
-                            '<p class="field__error" id="company_name-error"></p>' +
+                    '<div class="career mt-24" data-career>' +
+                        '<div class="row row--between">' +
+                            '<p class="field__label">Roles</p>' +
+                            '<span class="subtle">Leave the end year blank for your current job</span>' +
+                        '</div>' +
+                        '<div class="career__rows mt-8" data-career-rows>' +
+                            careerRows.map(function (r, i) {
+                                return '<div class="career__row" data-career-row>' +
+                                    '<div class="career__fields">' +
+                                        '<input class="input" type="text" name="career[' + i + '][company]" ' +
+                                            'maxlength="150" placeholder="Company" value="' + e(r.company) + '">' +
+                                        '<input class="input" type="text" name="career[' + i + '][job_title]" ' +
+                                            'maxlength="150" placeholder="Job title" value="' + e(r.job_title) + '">' +
+                                        '<input class="input" type="number" name="career[' + i + '][start_year]" ' +
+                                            'min="' + CONFIG.yearMin + '" max="' + CONFIG.yearMax + '" ' +
+                                            'placeholder="From" value="' + e(r.start_year) + '">' +
+                                        '<input class="input" type="number" name="career[' + i + '][end_year]" ' +
+                                            'min="' + CONFIG.yearMin + '" max="' + CONFIG.yearMax + '" ' +
+                                            'placeholder="To (blank = present)" value="' + e(r.end_year) + '">' +
+                                        '<button class="btn btn--ghost btn--sm career__remove" type="button" ' +
+                                            'data-career-remove aria-label="Remove this role">&times;</button>' +
+                                    '</div>' +
+                                '</div>';
+                            }).join('') +
+                        '</div>' +
+                        '<button class="btn btn--secondary btn--sm mt-8" type="button" data-career-add>' +
+                            '+ Add another role</button>' +
+                        '<p class="field__error mt-8" id="career-error"></p>' +
+                    '</div>' +
+
+                    '<div class="field field--full mt-16">' +
+                        '<label class="checkbox">' +
+                            '<input type="checkbox" id="employment_undisclosed" name="employment_undisclosed" ' +
+                                'value="1"' + (undisclosed ? ' checked' : '') + '>' +
+                            '<span class="checkbox__text">' +
+                                '<strong>Prefer not to disclose my employers</strong>' +
+                                '<span>Your career history stays on your record and stays visible to you ' +
+                                'and to programme administrators, but other scholars will not see it.</span>' +
+                            '</span>' +
+                        '</label>' +
+                    '</div>' +
+                '</fieldset>' +
+
+                // --- 4. Industrial attachment ---------------------------
+                '<fieldset class="fieldset">' +
+                    '<legend class="fieldset__legend">' +
+                        '<span class="fieldset__number" aria-hidden="true">4</span>' +
+                        '<span class="fieldset__title">Industrial attachment</span>' +
+                    '</legend>' +
+                    '<p class="fieldset__hint">Your work placement, if you have one. ' +
+                    'Tracked separately from employment &mdash; an attachment is part of your studies.</p>' +
+                    '<div class="field-grid">' +
+                        '<div class="field">' +
+                            '<label class="field__label" for="attachment_status">Attachment status</label>' +
+                            '<select class="select" id="attachment_status" name="attachment_status">' +
+                                options(ATTACHMENT_STATUSES, attachment, null) +
+                            '</select>' +
+                            '<p class="field__hint">Choose N/A if you have not been on attachment.</p>' +
+                            '<p class="field__error" id="attachment_status-error"></p>' +
                         '</div>' +
 
-                        '<div class="field field--full" data-company-undisclosed-field' + (showCompany ? '' : ' hidden') + '>' +
+                        '<div class="field" data-attachment-field' + (showAttachment ? '' : ' hidden') + '>' +
+                            '<label class="field__label" for="attachment_company">Company attached to ' +
+                            '<span class="field__required" aria-hidden="true">*</span></label>' +
+                            '<input class="input" type="text" id="attachment_company" name="attachment_company" ' +
+                                'maxlength="150" placeholder="Where you are placed" value="' +
+                                e(scholar && scholar.attachment_company ? scholar.attachment_company : '') + '">' +
+                            '<p class="field__error" id="attachment_company-error"></p>' +
+                        '</div>' +
+
+                        '<div class="field" data-attachment-start-field' + (showAttachment ? '' : ' hidden') + '>' +
+                            '<label class="field__label" for="attachment_start">Attachment start date ' +
+                            '<span class="field__required" aria-hidden="true">*</span></label>' +
+                            '<input class="input" type="date" id="attachment_start" name="attachment_start" ' +
+                                'min="' + CONFIG.yearMin + '-01-01" max="' + CONFIG.yearMax + '-12-31" value="' +
+                                e(scholar && scholar.attachment_start ? scholar.attachment_start : '') + '">' +
+                            '<p class="field__error" id="attachment_start-error"></p>' +
+                        '</div>' +
+
+                        '<div class="field" data-attachment-end-field' + (showAttachment ? '' : ' hidden') + '>' +
+                            '<label class="field__label" for="attachment_end">Attachment end date ' +
+                            '<span class="field__required" data-attachment-end-required aria-hidden="true"' +
+                                (attachment === 'completed' ? '' : ' hidden') + '>*</span></label>' +
+                            '<input class="input" type="date" id="attachment_end" name="attachment_end" ' +
+                                'min="' + CONFIG.yearMin + '-01-01" max="' + CONFIG.yearMax + '-12-31" value="' +
+                                e(scholar && scholar.attachment_end ? scholar.attachment_end : '') + '">' +
+                            '<p class="field__hint" data-attachment-end-hint>' +
+                                (attachment === 'completed'
+                                    ? 'Required - the date the placement finished.'
+                                    : 'Leave blank if you are still there.') + '</p>' +
+                            '<p class="field__error" id="attachment_end-error"></p>' +
+                        '</div>' +
+                    '</div>' +
+                '</fieldset>' +
+
+                // --- 5. Contact & networking ----------------------------
+                '<fieldset class="fieldset">' +
+                    '<legend class="fieldset__legend">' +
+                        '<span class="fieldset__number" aria-hidden="true">5</span>' +
+                        '<span class="fieldset__title">Contact &amp; networking</span>' +
+                    '</legend>' +
+                    '<p class="fieldset__hint">The directory lets scholars and alumni reach each other. ' +
+                    'You choose whether your details appear there.</p>' +
+                    '<div class="field-grid">' +
+                        '<div class="field">' +
+                            '<label class="field__label" for="phone">Phone number ' +
+                            '<span class="field__optional">optional</span></label>' +
+                            '<input class="input" type="tel" id="phone" name="phone" maxlength="30" ' +
+                                'placeholder="+263 77 123 4567" value="' +
+                                e(scholar && scholar.phone ? scholar.phone : '') + '">' +
+                            '<p class="field__error" id="phone-error"></p>' +
+                        '</div>' +
+                        '<div class="field">' +
+                            '<label class="field__label" for="personal_email">Personal e-mail ' +
+                            '<span class="field__optional">optional</span></label>' +
+                            '<input class="input" type="email" id="personal_email" name="personal_email" ' +
+                                'maxlength="255" placeholder="you@gmail.com" value="' +
+                                e(scholar && scholar.personal_email ? scholar.personal_email : '') + '">' +
+                            '<p class="field__hint">An address that will outlast your student one.</p>' +
+                            '<p class="field__error" id="personal_email-error"></p>' +
+                        '</div>' +
+                        '<div class="field field--full">' +
                             '<label class="checkbox">' +
-                                '<input type="checkbox" id="company_undisclosed" name="company_undisclosed" value="1"' +
-                                    (undisclosed ? ' checked' : '') + '>' +
+                                '<input type="checkbox" id="contact_visible" name="contact_visible" value="1"' +
+                                    (contactVisible ? ' checked' : '') + '>' +
                                 '<span class="checkbox__text">' +
-                                    '<strong>Prefer not to disclose</strong>' +
-                                    '<span>Your employer will not be stored at all — not hidden, not recorded.</span>' +
+                                    '<strong>Share my contact details with other scholars</strong>' +
+                                    '<span>Your phone number and e-mail address appear in the scholar ' +
+                                    'directory so others can get in touch. Untick this and only you and ' +
+                                    'programme administrators can see them. Your academic results are ' +
+                                    'never shared either way.</span>' +
                                 '</span>' +
                             '</label>' +
                         '</div>' +
                     '</div>' +
                 '</fieldset>' +
 
+                // --- 6. Academic results --------------------------------
                 '<fieldset class="fieldset">' +
                     '<legend class="fieldset__legend">' +
-                        '<span class="fieldset__number" aria-hidden="true">4</span>' +
+                        '<span class="fieldset__number" aria-hidden="true">6</span>' +
                         '<span class="fieldset__title">Academic results</span>' +
                     '</legend>' +
                     '<p class="fieldset__hint">Your latest transcript or results slip. In the real ' +
@@ -748,8 +1192,13 @@
             '</div>';
         }
 
-        var documents = scholar.documents.slice().reverse();
-        var current = currentDocument(scholar);
+        var session = currentUser();
+        var isOwn = Boolean(session && session.scholarId === scholar.id);
+        var maySeeResults = canSeeResults(scholar);
+        var maySeeContact = contactVisibleTo(scholar);
+
+        var documents = maySeeResults ? scholar.documents.slice().reverse() : [];
+        var current = maySeeResults ? currentDocument(scholar) : null;
 
         var docsHtml = current
             ? '<div class="doc-list">' + documents.map(function (item) {
@@ -768,13 +1217,34 @@
             'web folder and served only to the scholar and programme administrators.</p>'
             : '<div class="card"><div class="card__body"><div class="row row--between">' +
                 '<p class="muted">No academic results have been uploaded yet.</p>' +
-                (isAdminView ? '' : '<a class="btn btn--secondary btn--sm" href="#/edit">Upload now</a>') +
+                (isOwn ? '<a class="btn btn--secondary btn--sm" href="#/edit">Upload now</a>' : '') +
               '</div></div></div>';
 
-        var hasRealCompany = expectsCompany(scholar) && !scholar.company_undisclosed && scholar.company_name;
+        /*
+         * Another scholar is looking. They are told the section exists and
+         * why it is empty - but not whether a transcript has been uploaded,
+         * because even that is between the scholar and the programme.
+         */
+        if (!maySeeResults) {
+            docsHtml = '<div class="card"><div class="card__body"><div class="row">' +
+                '<span class="file-chip__badge" aria-hidden="true">' +
+                    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" ' +
+                    'stroke-width="1.8" stroke-linecap="round">' +
+                    '<rect x="4" y="10" width="16" height="10" rx="2"/>' +
+                    '<path d="M8 10V7a4 4 0 1 1 8 0v3"/></svg>' +
+                '</span>' +
+                '<span class="grow">' +
+                    '<span class="file-chip__name">Confidential</span>' +
+                    '<span class="file-chip__detail">Academic results are visible only to the ' +
+                    'scholar and to programme administrators.</span>' +
+                '</span>' +
+            '</div></div></div>';
+        }
+
+        var visibleCareer = careerVisibleTo(scholar);
 
         return '<div class="shell">' +
-            (isAdminView ? '<a class="btn btn--ghost btn--sm" href="#/directory">&larr; Back to directory</a>' : '') +
+            (isOwn ? '' : '<a class="btn btn--ghost btn--sm" href="#/directory">&larr; Back to directory</a>') +
             '<div class="row row--between mt-16">' +
                 '<div class="profile-header">' +
                     '<span class="avatar" aria-hidden="true">' + e(initials(scholar)) + '</span>' +
@@ -788,8 +1258,13 @@
                         '</div>' +
                     '</div>' +
                 '</div>' +
-                '<a class="btn btn--primary" href="#' +
-                    (isAdminView ? '/scholar/' + scholar.id + '/edit' : '/edit') + '">Edit profile</a>' +
+                (isAdminView
+                    ? '<a class="btn btn--primary" href="#/scholar/' + scholar.id + '/edit">Edit profile</a>'
+                    : isOwn
+                        ? '<a class="btn btn--primary" href="#/edit">Edit profile</a>'
+                        : (maySeeContact && bestEmail(scholar)
+                            ? '<a class="btn btn--primary" href="mailto:' + e(bestEmail(scholar)) + '">Get in touch</a>'
+                            : '')) +
             '</div>' +
 
             '<section class="section" style="margin-top:40px">' +
@@ -805,19 +1280,83 @@
                 '</div>' +
             '</section>' +
 
+            // --- Career -------------------------------------------------
             '<section class="section" style="margin-top:40px">' +
-                '<h2 class="heading" style="margin-bottom:16px">Employment</h2>' +
-                '<div class="detail-grid">' +
-                    detail('Employment status', EMPLOYMENT_STATUSES[scholar.employment_status]) +
-                    detail('Company', companyDisplay(scholar), !hasRealCompany) +
-                    (isAdminView ? detail('Account e-mail', scholar.email) : '') +
+                '<div class="row row--between" style="margin-bottom:16px">' +
+                    '<h2 class="heading">Career</h2>' +
+                    '<span class="badge badge--neutral">' +
+                        e(EMPLOYMENT_STATUSES[scholar.employment_status] || '') + '</span>' +
                 '</div>' +
+                (visibleCareer.length
+                    ? '<ol class="timeline">' + visibleCareer.map(function (role) {
+                        var isNow = role.end_year === null || role.end_year === undefined;
+
+                        return '<li class="timeline__item' + (isNow ? ' timeline__item--current' : '') + '">' +
+                            '<span class="timeline__marker" aria-hidden="true"></span>' +
+                            '<div class="timeline__body">' +
+                                '<p class="timeline__role">' + e(role.job_title) +
+                                    (isNow ? ' <span class="badge badge--success">Current</span>' : '') +
+                                '</p>' +
+                                '<p class="timeline__company">' + e(role.company) + '</p>' +
+                                '<p class="timeline__period">' + e(rolePeriod(role)) + '</p>' +
+                            '</div>' +
+                        '</li>';
+                      }).join('') + '</ol>'
+                    : '<div class="card"><div class="card__body"><p class="muted">' +
+                      (scholar.employment_undisclosed && !isOwn && !isAdminView
+                        ? 'This scholar has chosen not to share their employment history.'
+                        : 'No roles have been added yet.') +
+                      '</p></div></div>') +
+            '</section>' +
+
+            // --- Industrial attachment ------------------------------
+            '<section class="section" style="margin-top:40px">' +
+                '<h2 class="heading" style="margin-bottom:16px">Industrial attachment</h2>' +
+                '<div class="detail-grid">' +
+                    detail('Attachment status', attachmentLabel(scholar), !hasAttachment(scholar)) +
+                    (hasAttachment(scholar)
+                        ? detail('Company', scholar.attachment_company || 'Not provided', !scholar.attachment_company) +
+                          detail('Period', attachmentPeriod(scholar) || 'Not set', !scholar.attachment_start)
+                        : '') +
+                '</div>' +
+            '</section>' +
+
+            // --- Contact --------------------------------------------
+            '<section class="section" style="margin-top:40px">' +
+                '<div class="row row--between" style="margin-bottom:16px">' +
+                    '<h2 class="heading">Contact</h2>' +
+                    (isOwn
+                        ? '<span class="badge ' + (scholar.contact_visible ? 'badge--success' : 'badge--neutral') + '">' +
+                          (scholar.contact_visible ? 'Shared with other scholars' : 'Visible only to you and administrators') +
+                          '</span>'
+                        : '') +
+                '</div>' +
+                (maySeeContact && (bestEmail(scholar) || scholar.phone)
+                    ? '<div class="detail-grid">' +
+                        (scholar.personal_email ? '<div class="detail"><p class="detail__label">Personal e-mail</p>' +
+                            '<p class="detail__value"><a href="mailto:' + e(scholar.personal_email) + '">' +
+                            e(scholar.personal_email) + '</a></p></div>' : '') +
+                        (scholar.email && scholar.email !== scholar.personal_email
+                            ? '<div class="detail"><p class="detail__label">' +
+                              (isOwn || isAdminView ? 'Account e-mail' : 'E-mail') + '</p>' +
+                              '<p class="detail__value"><a href="mailto:' + e(scholar.email) + '">' +
+                              e(scholar.email) + '</a></p></div>'
+                            : '') +
+                        (scholar.phone ? '<div class="detail"><p class="detail__label">Phone</p>' +
+                            '<p class="detail__value"><a href="tel:' + e(scholar.phone.replace(/ /g, '')) + '">' +
+                            e(scholar.phone) + '</a></p></div>' : '') +
+                      '</div>'
+                    : '<div class="card"><div class="card__body"><p class="muted">' +
+                      (isOwn
+                        ? 'You have not added a phone number yet. <a href="#/edit">Add one</a> so other scholars can reach you.'
+                        : 'This scholar has chosen not to share their contact details.') +
+                      '</p></div></div>') +
             '</section>' +
 
             '<section class="section" style="margin-top:40px">' +
                 '<div class="row row--between" style="margin-bottom:16px">' +
                     '<h2 class="heading">Academic results</h2>' +
-                    (documents.length > 1 ? '<span class="subtle">' + documents.length + ' versions on record</span>' : '') +
+                    (maySeeResults && documents.length > 1 ? '<span class="subtle">' + documents.length + ' versions on record</span>' : '') +
                 '</div>' + docsHtml +
             '</section>' +
         '</div>';
@@ -831,7 +1370,9 @@
 
         if (search) {
             scholars = scholars.filter(function (s) {
-                return (s.first_name + ' ' + s.surname + ' ' + s.field_of_study + ' ' + s.email)
+                return (s.first_name + ' ' + s.surname + ' ' + s.field_of_study + ' ' + s.email +
+                        ' ' + (s.attachment_company || '') + ' ' +
+                        (s.career || []).map(function (r) { return r.company + ' ' + r.job_title; }).join(' '))
                     .toLowerCase().indexOf(search) !== -1;
             });
         }
@@ -848,6 +1389,10 @@
             scholars = scholars.filter(function (s) { return s.employment_status === params.employment_status; });
         }
 
+        if (params.attachment_status) {
+            scholars = scholars.filter(function (s) { return s.attachment_status === params.attachment_status; });
+        }
+
         var sort = params.sort || 'surname';
         var direction = params.direction === 'desc' ? -1 : 1;
 
@@ -856,7 +1401,8 @@
         var sortable = {
             surname: 'surname',
             year_enrolled: 'year_enrolled',
-            field: 'field_of_study'
+            field: 'field_of_study',
+            attachment: 'attachment_status'
         };
         var key = sortable[sort] || 'surname';
 
@@ -880,7 +1426,8 @@
             current: all.filter(function (s) { return s.graduation_status === 'current_student'; }).length,
             employed: all.filter(function (s) {
                 return s.employment_status === 'working' || s.employment_status === 'entrepreneurship';
-            }).length
+            }).length,
+            onAttachment: all.filter(function (s) { return s.attachment_status === 'in_progress'; }).length
         };
 
         var cohorts = [];
@@ -931,25 +1478,47 @@
         var cohortMap = {};
         cohorts.forEach(function (c) { cohortMap[c] = c; });
 
+        var viewerIsAdmin = isAdmin();
+        var session = currentUser();
+
         var rows = visible.map(function (s) {
             var doc = currentDocument(s);
+            var showContact = contactVisibleTo(s);
 
             return '<tr>' +
                 '<td><div class="table__person">' +
                     '<span class="avatar avatar--sm" aria-hidden="true">' + e(initials(s)) + '</span>' +
-                    '<span><span class="table__name">' + e(fullName(s)) + '</span><br>' +
-                    '<span class="table__email">' + e(s.email) + '</span></span>' +
+                    '<span><span class="table__name">' + e(fullName(s)) + '</span>' +
+                    (session && session.scholarId === s.id ? ' <span class="badge badge--blue">You</span>' : '') +
+                    '</span>' +
                 '</div></td>' +
                 '<td>' + e(s.year_enrolled) + '</td>' +
                 '<td>' + e(s.field_of_study) + '</td>' +
                 '<td><span class="badge ' + (s.graduation_status === 'graduated' ? 'badge--success' : 'badge--blue') + '">' +
                     e(academicSummary(s)) + '</span></td>' +
                 '<td><span class="badge badge--neutral">' + e(EMPLOYMENT_STATUSES[s.employment_status]) + '</span>' +
-                    (expectsCompany(s) ? '<br><span class="table__email">' + e(companyDisplay(s)) + '</span>' : '') +
+                    '<br><span class="table__email">' + e(employmentDisplay(s)) + '</span>' +
                 '</td>' +
-                '<td>' + (doc
-                    ? '<span class="badge badge--blue">' + e(typeLabel(doc)) + '</span>'
-                    : '<span class="badge badge--warning">Missing</span>') + '</td>' +
+                '<td>' + (hasAttachment(s)
+                    ? '<span class="badge ' + (s.attachment_status === 'in_progress' ? 'badge--warning' : 'badge--success') + '">' +
+                      e(attachmentLabel(s)) + '</span>' +
+                      (s.attachment_company ? '<br><span class="table__email">' + e(s.attachment_company) + '</span>' : '') +
+                      (attachmentPeriod(s) ? '<br><span class="subtle">' + e(attachmentPeriod(s)) + '</span>' : '')
+                    : '<span class="subtle">N/A</span>') + '</td>' +
+                '<td>' + (showContact && (bestEmail(s) || s.phone)
+                    ? '<span class="contact-cell">' +
+                        (bestEmail(s) ? '<a class="contact-cell__link" href="mailto:' + e(bestEmail(s)) + '">' + e(bestEmail(s)) + '</a>' : '') +
+                        (s.phone ? '<a class="contact-cell__link" href="tel:' + e(s.phone.replace(/ /g, '')) + '">' + e(s.phone) + '</a>' : '') +
+                      '</span>'
+                    : '<span class="subtle">Private</span>') + '</td>' +
+                // The Results column exists only for administrators: whether a
+                // scholar has uploaded a transcript is between them and the
+                // programme.
+                (viewerIsAdmin
+                    ? '<td>' + (doc
+                        ? '<span class="badge badge--blue">' + e(typeLabel(doc)) + '</span>'
+                        : '<span class="badge badge--warning">Missing</span>') + '</td>'
+                    : '') +
                 '<td><a class="btn btn--secondary btn--sm" href="#/scholar/' + s.id + '">View</a></td>' +
             '</tr>';
         }).join('');
@@ -982,19 +1551,32 @@
                 '<th scope="col">' + sortLink('year_enrolled', 'Cohort') + '</th>' +
                 '<th scope="col">' + sortLink('field', 'Field of study') + '</th>' +
                 '<th scope="col">Status</th><th scope="col">Employment</th>' +
-                '<th scope="col">Results</th><th scope="col"><span class="visually-hidden">Actions</span></th>' +
+                '<th scope="col">' + sortLink('attachment', 'Attachment') + '</th>' +
+                '<th scope="col">Contact</th>' +
+                (viewerIsAdmin ? '<th scope="col">Results</th>' : '') +
+                '<th scope="col"><span class="visually-hidden">Actions</span></th>' +
               '</tr></thead><tbody>' + rows + '</tbody></table></div>' + pager;
+
+        var footnote = viewerIsAdmin ? '' :
+            '<p class="subtle mt-24">Contact details appear only for scholars who have chosen ' +
+            'to share them. Academic results are never shown here — they are visible only to ' +
+            'their owner and to programme administrators. ' +
+            '<a href="#/edit">Manage your own sharing</a>.</p>';
 
         return '<div class="shell">' +
             '<div class="section__head">' +
-                '<p class="eyebrow">Administration</p>' +
+                '<p class="eyebrow">' + (viewerIsAdmin ? 'Administration' : 'Scholar network') + '</p>' +
                 '<h1 class="display-2">Scholar directory</h1>' +
-                '<p>Search, review and update every scholar record in the programme.</p>' +
+                '<p>' + (viewerIsAdmin
+                    ? 'Search, review and update every scholar record in the programme.'
+                    : 'Find scholars and alumni across the programme — see where they studied, ' +
+                      'where they are working, and get in touch.') + '</p>' +
             '</div>' +
             '<div class="stat-grid mt-32">' +
                 '<div class="stat"><p class="stat__label">Total scholars</p><p class="stat__value">' + stats.total + '</p></div>' +
                 '<div class="stat"><p class="stat__label">Graduated</p><p class="stat__value">' + stats.graduated + '</p></div>' +
                 '<div class="stat"><p class="stat__label">Current students</p><p class="stat__value">' + stats.current + '</p></div>' +
+                '<div class="stat"><p class="stat__label">On attachment</p><p class="stat__value">' + stats.onAttachment + '</p></div>' +
                 '<div class="stat"><p class="stat__label">Working or founding</p><p class="stat__value">' + stats.employed + '</p></div>' +
             '</div>' +
             '<form class="card mt-32" data-demo-filters><div class="card__body"><div class="filters">' +
@@ -1006,12 +1588,294 @@
                 selectFilter('cohort', 'Cohort', 'All years', cohortMap, params.cohort || '') +
                 selectFilter('graduation_status', 'Status', 'All statuses', GRADUATION_STATUSES, params.graduation_status || '') +
                 selectFilter('employment_status', 'Employment', 'All', EMPLOYMENT_STATUSES, params.employment_status || '') +
+                selectFilter('attachment_status', 'Attachment', 'All', ATTACHMENT_STATUSES, params.attachment_status || '') +
                 '<div class="row">' +
                     '<button class="btn btn--primary" type="submit">Apply</button>' +
                     '<a class="btn btn--ghost" href="#/directory">Reset</a>' +
                 '</div>' +
-            '</div></div></form>' + table +
+            '</div></div></form>' + table + footnote +
         '</div>';
+    }
+
+    /* ===============================================================
+     | Announcements
+     |================================================================ */
+
+    /** Pinned first, then newest — mirrors AnnouncementRepository::feed(). */
+    function announcementFeed(limit) {
+        var list = load().announcements.slice();
+
+        list.sort(function (a, b) {
+            if (Boolean(a.is_pinned) !== Boolean(b.is_pinned)) {
+                return a.is_pinned ? -1 : 1;
+            }
+
+            if (a.published_at !== b.published_at) {
+                return a.published_at < b.published_at ? 1 : -1;
+            }
+
+            return b.id - a.id; // stable secondary key
+        });
+
+        return limit ? list.slice(0, limit) : list;
+    }
+
+    function isRecent(announcement) {
+        var published = new Date(announcement.published_at).getTime();
+
+        return !isNaN(published) && published > Date.now() - 7 * 86400000;
+    }
+
+    /**
+     * The body is plain text, never HTML.
+     *
+     * Each paragraph is escaped separately and wrapped in <p>, so an
+     * announcement that happens to mention <script> displays those
+     * characters rather than running anything.
+     */
+    function announcementParagraphs(announcement) {
+        return String(announcement.body)
+            .replace(/\r\n/g, '\n')
+            .split(/\n\s*\n/)
+            .map(function (part) { return part.trim(); })
+            .filter(Boolean)
+            .map(function (part) { return '<p>' + e(part).replace(/\n/g, '<br>') + '</p>'; })
+            .join('');
+    }
+
+    function excerpt(announcement, length) {
+        var text = String(announcement.body).replace(/\s+/g, ' ').trim();
+
+        if (text.length <= length) {
+            return text;
+        }
+
+        var cut = text.slice(0, length);
+        var space = cut.lastIndexOf(' ');
+
+        if (space > length * 0.6) {
+            cut = cut.slice(0, space);
+        }
+
+        return cut.replace(/\s+$/, '') + '…';
+    }
+
+    function viewAnnouncements() {
+        var list = announcementFeed();
+        var admin = isAdmin();
+
+        if (list.length === 0) {
+            return '<div class="shell"><div class="card"><div class="empty">' +
+                '<h2>Nothing announced yet</h2>' +
+                '<p>' + (admin
+                    ? 'Post the first announcement — a meeting date, a deadline, or news the programme should know about.'
+                    : 'When the programme posts news or a meeting notice, it will appear here.') + '</p>' +
+                (admin ? '<a class="btn btn--primary" href="#/announcements/new">New announcement</a>' : '') +
+            '</div></div></div>';
+        }
+
+        var items = list.map(function (a) {
+            return '<article class="announcement' + (a.is_pinned ? ' announcement--pinned' : '') + '">' +
+                '<div class="announcement__head">' +
+                    '<div>' +
+                        '<div class="announcement__badges">' +
+                            (a.is_pinned ? '<span class="badge badge--blue">Pinned</span>' : '') +
+                            (isRecent(a) ? '<span class="badge badge--success">New</span>' : '') +
+                            '<span class="subtle">' + e(formatDate(a.published_at)) + '</span>' +
+                        '</div>' +
+                        '<h2 class="announcement__title">' + e(a.title) + '</h2>' +
+                    '</div>' +
+                    (admin
+                        ? '<div class="row">' +
+                            '<a class="btn btn--secondary btn--sm" href="#/announcements/' + a.id + '/edit">Edit</a>' +
+                            '<button class="btn btn--ghost btn--sm" type="button" data-demo-delete-announcement="' + a.id + '">Delete</button>' +
+                          '</div>'
+                        : '') +
+                '</div>' +
+                '<div class="announcement__body">' + announcementParagraphs(a) + '</div>' +
+                (a.author ? '<p class="announcement__meta">Posted by ' + e(a.author) + '</p>' : '') +
+            '</article>';
+        }).join('');
+
+        return '<div class="shell">' +
+            '<div class="row row--between">' +
+                '<div class="section__head" style="margin-bottom:0">' +
+                    '<p class="eyebrow">Programme</p>' +
+                    '<h1 class="display-2">Announcements</h1>' +
+                    '<p>Meetings, deadlines and news for everyone in the programme.</p>' +
+                '</div>' +
+                (admin ? '<a class="btn btn--primary" href="#/announcements/new">New announcement</a>' : '') +
+            '</div>' +
+            '<div class="announcement-list mt-32">' + items + '</div>' +
+        '</div>';
+    }
+
+    function viewAnnouncementForm(announcement) {
+        var isEditing = Boolean(announcement);
+
+        return '<div class="shell">' +
+            '<div class="section__head">' +
+                '<p class="eyebrow">' + (isEditing ? 'Edit announcement' : 'New announcement') + '</p>' +
+                '<h1 class="display-2">' + (isEditing ? 'Edit this announcement' : 'Post an announcement') + '</h1>' +
+                '<p>Everyone signed in to the programme will see this.</p>' +
+            '</div>' +
+
+            '<div class="error-summary mt-24" data-demo-announcement-errors hidden role="alert">' +
+                '<p class="error-summary__title">Please check the highlighted fields</p>' +
+            '</div>' +
+
+            '<form class="card mt-24" data-announcement-form novalidate>' +
+                '<div class="card__body stack">' +
+                    '<div class="field">' +
+                        '<label class="field__label" for="title">Title ' +
+                        '<span class="field__required" aria-hidden="true">*</span></label>' +
+                        '<input class="input" type="text" id="title" name="title" maxlength="150" ' +
+                            'placeholder="e.g. Scholars meeting — Saturday 14 March" value="' +
+                            e(isEditing ? announcement.title : '') + '">' +
+                        '<p class="field__error" id="title-error"></p>' +
+                    '</div>' +
+                    '<div class="field">' +
+                        '<label class="field__label" for="body">Announcement ' +
+                        '<span class="field__required" aria-hidden="true">*</span></label>' +
+                        '<textarea class="textarea" id="body" name="body" rows="10" maxlength="5000" ' +
+                            'placeholder="What is happening, when, and what anyone needs to do.">' +
+                            e(isEditing ? announcement.body : '') + '</textarea>' +
+                        '<p class="field__hint">Plain text. Leave a blank line between paragraphs.</p>' +
+                        '<p class="field__error" id="body-error"></p>' +
+                    '</div>' +
+                    '<div class="field-grid">' +
+                        '<div class="field">' +
+                            '<label class="field__label" for="published_at">Publication date ' +
+                            '<span class="field__optional">optional</span></label>' +
+                            '<input class="input" type="date" id="published_at" name="published_at" value="' +
+                                e(isEditing ? announcement.published_at : '') + '">' +
+                            '<p class="field__hint">Leave blank to publish now.</p>' +
+                            '<p class="field__error" id="published_at-error"></p>' +
+                        '</div>' +
+                        '<div class="field">' +
+                            '<label class="checkbox" style="margin-top:26px">' +
+                                '<input type="checkbox" id="is_pinned" name="is_pinned" value="1"' +
+                                    (isEditing && announcement.is_pinned ? ' checked' : '') + '>' +
+                                '<span class="checkbox__text">' +
+                                    '<strong>Pin to the top</strong>' +
+                                    '<span>Stays above everything else regardless of date.</span>' +
+                                '</span>' +
+                            '</label>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="card__footer">' +
+                    '<button class="btn btn--primary" type="submit">' +
+                        (isEditing ? 'Save changes' : 'Publish') + '</button>' +
+                    '<a class="btn btn--ghost" href="#/announcements">Cancel</a>' +
+                '</div>' +
+            '</form>' +
+        '</div>';
+    }
+
+    /**
+     * Validate and save an announcement.
+     *
+     * Mirrors AnnouncementValidator: a title and a body are required, and
+     * the body keeps its paragraph breaks rather than being whitespace
+     * collapsed like the other free-text fields.
+     */
+    function saveAnnouncement(existing) {
+        var form = document.querySelector('[data-announcement-form]');
+
+        if (!form) {
+            return;
+        }
+
+        var title = clean(form.querySelector('[name="title"]').value);
+        var body = form.querySelector('[name="body"]').value.replace(/\r\n/g, '\n').trim();
+        var published = form.querySelector('[name="published_at"]').value;
+        var pinned = form.querySelector('[name="is_pinned"]').checked;
+        var ok = true;
+
+        function mark(name, message) {
+            var input = form.querySelector('[name="' + name + '"]');
+            var holder = document.getElementById(name + '-error');
+
+            if (message) {
+                input.classList.add('is-invalid');
+                input.setAttribute('aria-invalid', 'true');
+                ok = false;
+            } else {
+                input.classList.remove('is-invalid');
+                input.removeAttribute('aria-invalid');
+            }
+
+            if (holder) {
+                holder.textContent = message || '';
+            }
+        }
+
+        mark('title', title === '' ? 'Give the announcement a title.'
+            : (title.length > 150 ? 'The title must be 150 characters or fewer.' : ''));
+        mark('body', body === '' ? 'Write the announcement.'
+            : (body.length > 5000 ? 'The announcement must be 5,000 characters or fewer.' : ''));
+
+        var summary = document.querySelector('[data-demo-announcement-errors]');
+
+        if (!ok) {
+            if (summary) {
+                summary.hidden = false;
+            }
+
+            var firstInvalid = form.querySelector('.is-invalid');
+
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus({ preventScroll: true });
+            }
+
+            return;
+        }
+
+        var store = load();
+        var date = published || new Date().toISOString().slice(0, 10);
+
+        if (existing) {
+            existing.title = title;
+            existing.body = body;
+            existing.published_at = date;
+            existing.is_pinned = pinned;
+            flash('success', 'Announcement updated.');
+        } else {
+            store.announcements.push({
+                id: store.nextAnnouncementId++,
+                title: title,
+                body: body,
+                is_pinned: pinned,
+                published_at: date,
+                author: currentUser().email
+            });
+            flash('success', 'Announcement published.');
+        }
+
+        save();
+        go('/announcements');
+    }
+
+    function forbidden(message) {
+        return '<div class="shell"><div class="card"><div class="empty">' +
+            '<p class="eyebrow">Error 403</p><h2 class="mt-8">Not allowed</h2>' +
+            '<p>' + e(message) + '</p>' +
+            '<a class="btn btn--primary" href="#/announcements">Back</a>' +
+        '</div></div></div>';
+    }
+
+    function findAnnouncement(id) {
+        var list = load().announcements;
+
+        for (var i = 0; i < list.length; i++) {
+            if (String(list[i].id) === String(id)) {
+                return list[i];
+            }
+        }
+
+        return null;
     }
 
     function viewNotFound() {
@@ -1040,7 +1904,7 @@
      * validation.js's handler so it can read event.defaultPrevented.
      */
     function mountProfileScripts(next) {
-        var sources = ['assets/js/validation.js', 'assets/js/upload.js'];
+        var sources = ['assets/js/validation.js', 'assets/js/upload.js', 'assets/js/career.js'];
         var remaining = sources.length;
 
         sources.forEach(function (src) {
@@ -1074,9 +1938,42 @@
         }
 
         var employment = value('employment_status');
-        var undisclosedInput = form.querySelector('[name="company_undisclosed"]');
+        var undisclosedInput = form.querySelector('[name="employment_undisclosed"]');
         var undisclosed = Boolean(undisclosedInput && undisclosedInput.checked);
-        var relevant = CONFIG.companyStatuses.indexOf(employment) !== -1;
+
+        /*
+         * The career rows. A completely blank row is skipped - the form
+         * always renders a spare - and the demo mirrors the server by
+         * keeping only rows that have every required field.
+         */
+        var career = [];
+
+        Array.prototype.forEach.call(form.querySelectorAll('[data-career-row]'), function (row) {
+            var inputs = row.querySelectorAll('input');
+            var company = clean(inputs[0].value);
+            var title = clean(inputs[1].value);
+            var start = clean(inputs[2].value);
+            var end = clean(inputs[3].value);
+
+            if (company === '' && title === '' && start === '' && end === '') {
+                return;
+            }
+
+            if (company === '' || title === '' || !/^\d{4}$/.test(start)) {
+                return;
+            }
+
+            career.push({
+                company: company,
+                job_title: title,
+                start_year: parseInt(start, 10),
+                end_year: /^\d{4}$/.test(end) ? parseInt(end, 10) : null
+            });
+        });
+
+        var attachmentStatus = value('attachment_status') || 'not_applicable';
+        var attachmentActive = CONFIG.attachmentStatuses.indexOf(attachmentStatus) !== -1;
+        var contactInput = form.querySelector('[name="contact_visible"]');
 
         return {
             first_name: value('first_name'),
@@ -1090,8 +1987,23 @@
             // Mirrors ProfileValidator::validateCompany(): the name is
             // DISCARDED — not merely hidden — when the status has no
             // company or the scholar withheld it.
-            company_name: (relevant && !undisclosed) ? (value('company_name') || null) : null,
-            company_undisclosed: relevant ? undisclosed : false
+            employment_undisclosed: undisclosed,
+            career: career,
+
+            attachment_status: attachmentStatus,
+
+            // Same discard rule for the attachment: a status of N/A clears
+            // the company and date rather than leaving them stored.
+            attachment_company: attachmentActive ? (value('attachment_company') || null) : null,
+            attachment_start: attachmentActive ? (value('attachment_start') || null) : null,
+            attachment_end: attachmentActive ? (value('attachment_end') || null) : null,
+
+            phone: value('phone') || null,
+            personal_email: value('personal_email') || null,
+
+            // An unticked checkbox submits nothing, so absence means OFF —
+            // otherwise the consent could never be withdrawn.
+            contact_visible: Boolean(contactInput && contactInput.checked)
         };
     }
 
@@ -1133,6 +2045,9 @@
                 id: store.nextId++,
                 email: (data.first_name + '.' + data.surname).toLowerCase() + '@example.org',
                 documents: [],
+                career: [],
+                contact_visible: true,
+                employment_undisclosed: false,
                 updated_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
             };
 
@@ -1162,7 +2077,7 @@
 
         // --- Routes needing a session -------------------------------
         if ((path === '/profile' || path === '/edit' || path === '/directory' ||
-             path.indexOf('/scholar/') === 0) && !session) {
+             path.indexOf('/scholar/') === 0 || path.indexOf('/announcements') === 0) && !session) {
             flash('info', 'Please choose a demo account to continue.');
             window.location.hash = '/login';
 
@@ -1170,6 +2085,7 @@
         }
 
         var scholarMatch = path.match(/^\/scholar\/(\d+)(\/edit)?$/);
+        var announcementEditMatch = path.match(/^\/announcements\/(\d+)\/edit$/);
 
         if (path === '/') {
             html = viewHome();
@@ -1182,13 +2098,26 @@
             html = viewForm(mine, false);
             afterRender = function (form) { handleSubmit(form, mine, false); };
         } else if (path === '/directory') {
-            html = isAdmin()
-                ? viewDirectory(params)
-                : '<div class="shell"><div class="card"><div class="empty">' +
-                  '<p class="eyebrow">Error 403</p><h2 class="mt-8">Not allowed</h2>' +
-                  '<p>The directory is for programme administrators. Sign in as the ' +
-                  'administrator account to see it.</p>' +
-                  '<a class="btn btn--primary" href="#/login">Switch account</a></div></div></div>';
+            // Open to every signed-in member, not just administrators.
+            html = viewDirectory(params);
+        } else if (path === '/announcements') {
+            html = viewAnnouncements();
+        } else if (path === '/announcements/new') {
+            html = isAdmin() ? viewAnnouncementForm(null) : forbidden('Only administrators can post announcements.');
+            if (isAdmin()) {
+                afterRender = function () { saveAnnouncement(null); };
+            }
+        } else if (announcementEditMatch) {
+            var target = findAnnouncement(announcementEditMatch[1]);
+
+            if (!isAdmin()) {
+                html = forbidden('Only administrators can edit announcements.');
+            } else if (!target) {
+                html = viewNotFound();
+            } else {
+                html = viewAnnouncementForm(target);
+                afterRender = function () { saveAnnouncement(target); };
+            }
         } else if (scholarMatch) {
             var target = findScholar(scholarMatch[1]);
 
@@ -1208,6 +2137,17 @@
         renderChrome();
         renderFlash();
         window.scrollTo(0, 0);
+
+        // The announcement form has its own submit handler; the profile
+        // form is driven by the application's real validator below.
+        var announcementForm = view.querySelector('[data-announcement-form]');
+
+        if (announcementForm && afterRender) {
+            announcementForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                afterRender();
+            });
+        }
 
         var form = view.querySelector('[data-profile-form]');
 
@@ -1280,6 +2220,27 @@
             return;
         }
 
+        var del = event.target.closest('[data-demo-delete-announcement]');
+
+        if (del) {
+            if (!window.confirm('Delete this announcement? This cannot be undone.')) {
+                return;
+            }
+
+            var id = del.getAttribute('data-demo-delete-announcement');
+            var store = load();
+
+            store.announcements = store.announcements.filter(function (a) {
+                return String(a.id) !== String(id);
+            });
+
+            save();
+            flash('success', 'Announcement deleted.');
+            go('/announcements');
+
+            return;
+        }
+
         if (event.target.closest('[data-demo-download]')) {
             // There is no file: only its name and size were ever recorded.
             flash('info', 'Downloads need the PHP application — this demo stores no files.');
@@ -1299,7 +2260,7 @@
 
         var pairs = [];
 
-        ['search', 'cohort', 'graduation_status', 'employment_status'].forEach(function (name) {
+        ['search', 'cohort', 'graduation_status', 'employment_status', 'attachment_status'].forEach(function (name) {
             var input = filters.querySelector('[name="' + name + '"]');
 
             if (input && input.value) {

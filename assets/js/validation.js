@@ -1,3 +1,9 @@
+/*
+ * GENERATED FILE — do not edit.
+ * 
+ * Copied from public/assets/js/validation.js by bin/build-pages.php.
+ * Edit the original and re-run:  php bin/build-pages.php
+ */
 /**
  * Client-side validation for the scholar profile form.
  *
@@ -45,11 +51,6 @@
             .split(',')
             .map(function (value) { return value.trim().toLowerCase(); })
             .filter(Boolean),
-        companyStatuses: (form.dataset.companyStatuses || 'working,entrepreneurship')
-            .split(',')
-            .map(function (value) { return value.trim(); })
-            .filter(Boolean),
-
         // Which attachment statuses require a host company and a start date.
         // Read from the server, like every other limit here.
         attachmentStatuses: (form.dataset.attachmentStatuses || 'in_progress,completed')
@@ -249,29 +250,6 @@
         return setError(input, '');
     }
 
-    function validateCompany() {
-        var input = field('company_name');
-        var undisclosed = field('company_undisclosed');
-        var employment = field('employment_status').value;
-
-        // Not applicable for this status, or deliberately withheld.
-        if (rules.companyStatuses.indexOf(employment) === -1 || undisclosed.checked) {
-            return setError(input, '');
-        }
-
-        var value = clean(input.value);
-
-        if (value === '') {
-            return setError(input, 'Company name is required, or tick "Prefer not to disclose".');
-        }
-
-        if (value.length > 150) {
-            return setError(input, 'Company name must be 150 characters or fewer.');
-        }
-
-        return setError(input, '');
-    }
-
     /**
      * Attachment company and start date.
      *
@@ -346,6 +324,90 @@
 
         if (!isNaN(enrolled) && year < enrolled) {
             return setError(input, 'The attachment cannot have started before you enrolled.');
+        }
+
+        return setError(input, '');
+    }
+
+    /**
+     * The attachment end date.
+     *
+     * Optional while in progress - blank is what "still there" looks like -
+     * and required once completed, because a finished placement that never
+     * ended is a contradiction.
+     */
+    function validateAttachmentEnd() {
+        var input = field('attachment_end');
+
+        if (!input) {
+            return true;
+        }
+
+        var status = field('attachment_status').value;
+
+        if (rules.attachmentStatuses.indexOf(status) === -1) {
+            return setError(input, '');
+        }
+
+        var value = clean(input.value);
+
+        if (value === '') {
+            return status === 'completed'
+                ? setError(input, 'Please give the date the attachment ended.')
+                : setError(input, '');
+        }
+
+        var parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
+        if (!parts) {
+            return setError(input, 'Enter the end date as a real calendar date.');
+        }
+
+        var year = parseInt(parts[1], 10);
+        var month = parseInt(parts[2], 10);
+        var day = parseInt(parts[3], 10);
+        var date = new Date(year, month - 1, day);
+
+        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+            return setError(input, 'Enter the end date as a real calendar date.');
+        }
+
+        if (year < rules.yearMin || year > rules.yearMax) {
+            return setError(input, 'The end date must fall between ' + rules.yearMin + ' and ' + rules.yearMax + '.');
+        }
+
+        // ISO-8601 dates compare correctly as plain strings.
+        var start = clean(field('attachment_start').value);
+
+        if (start !== '' && value < start) {
+            return setError(input, 'The attachment cannot have ended before it started.');
+        }
+
+        return setError(input, '');
+    }
+
+    /** A personal e-mail address, separate from the sign-in one. */
+    function validatePersonalEmail() {
+        var input = field('personal_email');
+
+        if (!input) {
+            return true;
+        }
+
+        var value = clean(input.value);
+
+        if (value === '') {
+            return setError(input, '');
+        }
+
+        if (value.length > 255) {
+            return setError(input, 'That e-mail address is too long.');
+        }
+
+        // Deliberately loose, matching FILTER_VALIDATE_EMAIL closely enough
+        // for instant feedback; PHP has the final say.
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            return setError(input, 'Enter a valid e-mail address.');
         }
 
         return setError(input, '');
@@ -448,35 +510,7 @@
      */
 
     function syncConditionalFields() {
-        var employment = field('employment_status').value;
         var status = field('graduation_status').value;
-        var companyWrapper = form.querySelector('[data-company-field]');
-        var undisclosedWrapper = form.querySelector('[data-company-undisclosed-field]');
-        var companyInput = field('company_name');
-        var undisclosed = field('company_undisclosed');
-        var showCompany = rules.companyStatuses.indexOf(employment) !== -1;
-
-        if (companyWrapper) {
-            companyWrapper.hidden = !showCompany;
-        }
-
-        if (undisclosedWrapper) {
-            undisclosedWrapper.hidden = !showCompany;
-        }
-
-        // Disable rather than only hide, so the value is not posted at all.
-        // The server ignores it anyway; this keeps the request honest.
-        if (companyInput) {
-            companyInput.disabled = !showCompany || undisclosed.checked;
-
-            if (undisclosed.checked) {
-                companyInput.value = '';
-            }
-
-            if (!showCompany) {
-                setError(companyInput, '');
-            }
-        }
 
         var graduationLabel = form.querySelector('[data-graduation-year-label]');
         var graduationHint = form.querySelector('[data-graduation-year-hint]');
@@ -536,6 +570,36 @@
                     setError(attachmentStart, '');
                 }
             }
+
+            var endWrap = form.querySelector('[data-attachment-end-field]');
+            var attachmentEnd = field('attachment_end');
+
+            if (endWrap) {
+                endWrap.hidden = !showAttachment;
+            }
+
+            if (attachmentEnd) {
+                attachmentEnd.disabled = !showAttachment;
+
+                if (!showAttachment) {
+                    setError(attachmentEnd, '');
+                }
+            }
+
+            // The end date is only compulsory once the placement is over.
+            var endRequired = form.querySelector('[data-attachment-end-required]');
+
+            if (endRequired) {
+                endRequired.hidden = attachmentStatus.value !== 'completed';
+            }
+
+            var endHint = form.querySelector('[data-attachment-end-hint]');
+
+            if (endHint) {
+                endHint.textContent = attachmentStatus.value === 'completed'
+                    ? 'Required - the date the placement finished.'
+                    : 'Leave blank if you are still there.';
+            }
         }
     }
 
@@ -555,10 +619,11 @@
             validateGraduationYear(),
             validateFieldOfStudy(),
             validateSelect(field('employment_status'), 'Employment status is required.'),
-            validateCompany(),
             validateAttachmentCompany(),
             validateAttachmentStart(),
+            validateAttachmentEnd(),
             validatePhone(),
+            validatePersonalEmail(),
             validateUpload()
         ];
 
@@ -572,13 +637,15 @@
             validateYearEnrolled();
             validateGraduationYear();
             validateAttachmentStart();
+            validateAttachmentEnd();
         },
         graduation_year: validateGraduationYear,
         field_of_study: validateFieldOfStudy,
-        company_name: validateCompany,
         attachment_company: validateAttachmentCompany,
-        attachment_start: validateAttachmentStart,
+        attachment_start: function () { validateAttachmentStart(); validateAttachmentEnd(); },
+        attachment_end: validateAttachmentEnd,
         phone: validatePhone,
+        personal_email: validatePersonalEmail,
         academic_results: validateUpload
     };
 
@@ -615,16 +682,6 @@
         validateGraduationYear();
     });
 
-    field('employment_status').addEventListener('change', function () {
-        syncConditionalFields();
-        validateCompany();
-    });
-
-    field('company_undisclosed').addEventListener('change', function () {
-        syncConditionalFields();
-        validateCompany();
-    });
-
     var attachmentStatusField = field('attachment_status');
 
     if (attachmentStatusField) {
@@ -632,6 +689,7 @@
             syncConditionalFields();
             validateAttachmentCompany();
             validateAttachmentStart();
+            validateAttachmentEnd();
         });
     }
 

@@ -1,3 +1,9 @@
+/*
+ * GENERATED FILE — do not edit.
+ * 
+ * Copied from public/assets/js/upload.js by bin/build-pages.php.
+ * Edit the original and re-run:  php bin/build-pages.php
+ */
 /**
  * Drag-and-drop behaviour for the academic-results field.
  *

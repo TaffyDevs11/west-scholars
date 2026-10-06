@@ -1,3 +1,9 @@
+/*
+ * GENERATED FILE — do not edit.
+ * 
+ * Copied from public/assets/css/app.css by bin/build-pages.php.
+ * Edit the original and re-run:  php bin/build-pages.php
+ */
 /* ==========================================================================
    WEST Scholars — design system
    ==========================================================================
@@ -1665,4 +1671,141 @@ a:hover {
     min-height: 160px;
     font-family: var(--font-ui);
     line-height: 1.6;
+}
+
+/* --------------------------------------------------------------------------
+   Career timeline
+
+   A vertical rule with a marker per role. The current role gets a filled
+   marker in the brand blue; past roles get a hollow one, so the eye finds
+   "where are they now" without reading any text.
+   -------------------------------------------------------------------------- */
+
+.timeline {
+    position: relative;
+    padding-left: 26px;
+}
+
+/* The rule itself, drawn behind the markers. */
+.timeline::before {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--color-border);
+}
+
+.timeline__item {
+    position: relative;
+    padding-bottom: 24px;
+}
+
+.timeline__item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline__marker {
+    position: absolute;
+    left: -26px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border-strong);
+}
+
+.timeline__item--current .timeline__marker {
+    background: var(--color-scholar-blue);
+    border-color: var(--color-scholar-blue);
+}
+
+.timeline__role {
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: -0.008em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.timeline__company {
+    font-size: 15px;
+    color: var(--color-text);
+    margin-top: 2px;
+}
+
+.timeline__period {
+    font-size: 13px;
+    color: var(--color-text-subtle);
+    margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Career history editor
+   -------------------------------------------------------------------------- */
+
+.career__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.career__row {
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 12px;
+}
+
+.career__row--invalid {
+    border-color: var(--color-error);
+    background: var(--color-error-wash);
+}
+
+/* Company and job title take the room; the two years are narrow and the
+   remove button is just wide enough for its glyph. */
+.career__fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.4fr) 110px 150px auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.career__row .input {
+    background: var(--color-surface);
+}
+
+.career__remove {
+    font-size: 20px;
+    line-height: 1;
+    padding: 6px 12px;
+    color: var(--color-text-subtle);
+}
+
+.career__remove:hover {
+    color: var(--color-error);
+    background: var(--color-error-wash);
+}
+
+@media (max-width: 900px) {
+    .career__fields {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* The two text fields each take the full width on a phone; the years
+       sit side by side below them. */
+    .career__fields .input:nth-child(2),
+    .career__fields .input:nth-child(4) {
+        grid-column: 1 / -1;
+    }
+
+    .career__remove {
+        grid-column: 1 / -1;
+        justify-self: end;
+    }
 }
